@@ -1,0 +1,49 @@
+row,Environment,AssetType,AssetCriticality,Impact
+1,production,DB,critical,very high
+2,production,DB,high,very high
+3,production,DB,Medium,high
+4,production,DB,Low,medium
+5,production,storage,critical,very high
+6,production,storage,high,very high
+7,production,storage,medium,high
+8,production,storage,low,medium
+9,production,compute,critical,very high
+10,production,compute,high,very high
+11,production,compute,medium,high
+12,production,compute,low,medium
+13,production,None,critical,very high
+14,production,None,high,very high
+15,production,None,medium,high
+16,production,None,low,medium
+17,non_production,DB,critical,high
+18,non_production,DB,high,high
+19,non_production,DB,medium,medium
+20,non_production,DB,low,low
+21,non_production,storage,critical,high
+22,non_production,storage,high,high
+23,non_production,storage,medium,medium
+24,non_production,storage,low,low
+25,non_production,compute,critical,high
+26,non_production,compute,high,high
+27,non_production,compute,medium,medium
+28,non_production,compute,low,low
+29,non_production,None,critical,high
+30,non_production,None,high,medium
+31,non_production,None,medium,low
+32,non_production,None,low,low
+33,None,DB,critical,very high
+34,None,DB,high,very high
+35,None,DB,medium,high
+36,None,DB,low,medium
+37,None,storage,critical,very high
+38,None,storage,high,very high
+39,None,storage,medium,high
+40,None,storage,low,medium
+41,None,compute,critical,very high
+42,None,compute,high,very high
+43,None,compute,medium,high
+44,None,compute,low,medium
+45,None,None,critical,very high
+46,None,None,high,very high
+47,None,None,medium,high
+48,None,None,low,medium

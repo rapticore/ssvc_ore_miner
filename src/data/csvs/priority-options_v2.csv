@@ -1,0 +1,109 @@
+row,Exploitation,Exposure,Utility,Impact,Priority
+1,None,unlikely,laborious,low,defer
+2,None,unlikely,laborious,medium,defer
+3,None,unlikely,laborious,high,scheduled
+4,None,unlikely,laborious,very high,scheduled
+5,None,unlikely,complex,low,defer
+6,None,unlikely,complex,medium,scheduled
+7,None,unlikely,complex,high,scheduled
+8,None,unlikely,complex,very high,scheduled
+9,None,unlikely,effortless,low,defer
+10,None,unlikely,effortless,medium,scheduled
+11,None,unlikely,effortless,high,scheduled
+12,None,unlikely,effortless,very high,scheduled
+13,None,probable,laborious,low,defer
+14,None,probable,laborious,medium,scheduled
+15,None,probable,laborious,high,scheduled
+16,None,probable,laborious,very high,scheduled
+17,None,probable,complex,low,defer
+18,None,probable,complex,medium,scheduled
+19,None,probable,complex,high,scheduled
+20,None,probable,complex,very high,scheduled
+21,None,probable,effortless,low,scheduled
+22,None,probable,effortless,medium,scheduled
+23,None,probable,effortless,high,scheduled
+24,None,probable,effortless,very high,scheduled
+25,None,unavoidable,laborious,low,defer
+26,None,unavoidable,laborious,medium,scheduled
+27,None,unavoidable,laborious,high,scheduled
+28,None,unavoidable,laborious,very high,scheduled
+29,None,unavoidable,complex,low,scheduled
+30,None,unavoidable,complex,medium,scheduled
+31,None,unavoidable,complex,high,scheduled
+32,None,unavoidable,complex,very high,scheduled
+33,None,unavoidable,effortless,low,scheduled
+34,None,unavoidable,effortless,medium,scheduled
+35,None,unavoidable,effortless,high,scheduled
+36,None,unavoidable,effortless,very high,out-of-cycle
+37,PoC,unlikely,laborious,low,defer
+38,PoC,unlikely,laborious,medium,scheduled
+39,PoC,unlikely,laborious,high,scheduled
+40,PoC,unlikely,laborious,very high,scheduled
+41,PoC,unlikely,complex,low,defer
+42,PoC,unlikely,complex,medium,scheduled
+43,PoC,unlikely,complex,high,scheduled
+44,PoC,unlikely,complex,very high,scheduled
+45,PoC,unlikely,effortless,low,scheduled
+46,PoC,unlikely,effortless,medium,scheduled
+47,PoC,unlikely,effortless,high,scheduled
+48,PoC,unlikely,effortless,very high,scheduled
+49,PoC,probable,laborious,low,defer
+50,PoC,probable,laborious,medium,scheduled
+51,PoC,probable,laborious,high,scheduled
+52,PoC,probable,laborious,very high,scheduled
+53,PoC,probable,complex,low,scheduled
+54,PoC,probable,complex,medium,scheduled
+55,PoC,probable,complex,high,scheduled
+56,PoC,probable,complex,very high,scheduled
+57,PoC,probable,effortless,low,scheduled
+58,PoC,probable,effortless,medium,scheduled
+59,PoC,probable,effortless,high,scheduled
+60,PoC,probable,effortless,very high,out-of-cycle
+61,PoC,unavoidable,laborious,low,defer
+62,PoC,unavoidable,laborious,medium,scheduled
+63,PoC,unavoidable,laborious,high,scheduled
+64,PoC,unavoidable,laborious,very high,out-of-cycle
+65,PoC,unavoidable,complex,low,scheduled
+66,PoC,unavoidable,complex,medium,scheduled
+67,PoC,unavoidable,complex,high,scheduled
+68,PoC,unavoidable,complex,very high,out-of-cycle
+69,PoC,unavoidable,effortless,low,scheduled
+70,PoC,unavoidable,effortless,medium,scheduled
+71,PoC,unavoidable,effortless,high,out-of-cycle
+72,PoC,unavoidable,effortless,very high,out-of-cycle
+73,active,unlikely,laborious,low,scheduled
+74,active,unlikely,laborious,medium,scheduled
+75,active,unlikely,laborious,high,out-of-cycle
+76,active,unlikely,laborious,very high,out-of-cycle
+77,active,unlikely,complex,low,scheduled
+78,active,unlikely,complex,medium,scheduled
+79,active,unlikely,complex,high,out-of-cycle
+80,active,unlikely,complex,very high,out-of-cycle
+81,active,unlikely,effortless,low,scheduled
+82,active,unlikely,effortless,medium,scheduled
+83,active,unlikely,effortless,high,out-of-cycle
+84,active,unlikely,effortless,very high,out-of-cycle
+85,active,probable,laborious,low,scheduled
+86,active,probable,laborious,medium,scheduled
+87,active,probable,laborious,high,out-of-cycle
+88,active,probable,laborious,very high,out-of-cycle
+89,active,probable,complex,low,scheduled
+90,active,probable,complex,medium,scheduled
+91,active,probable,complex,high,out-of-cycle
+92,active,probable,complex,very high,out-of-cycle
+93,active,probable,effortless,low,scheduled
+94,active,probable,effortless,medium,out-of-cycle
+95,active,probable,effortless,high,out-of-cycle
+96,active,probable,effortless,very high,out-of-cycle
+97,active,unavoidable,laborious,low,scheduled
+98,active,unavoidable,laborious,medium,scheduled
+99,active,unavoidable,laborious,high,out-of-cycle
+100,active,unavoidable,laborious,very high,act_now
+101,active,unavoidable,complex,low,scheduled
+102,active,unavoidable,complex,medium,out-of-cycle
+103,active,unavoidable,complex,high,act_now
+104,active,unavoidable,complex,very high,act_now
+105,active,unavoidable,effortless,low,out-of-cycle
+106,active,unavoidable,effortless,medium,out-of-cycle
+107,active,unavoidable,effortless,high,act_now
+108,active,unavoidable,effortless,very high,act_now

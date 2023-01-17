@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Rope project settings
+.ropeproject
+/threatdb.db
+/ssvc_recommendations.xlsx
