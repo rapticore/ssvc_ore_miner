@@ -47,18 +47,27 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 [-a {DB,Computer,Storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
 
 optional arguments:
--h, --help show this help message and exit --single Parameter based entry --datafile csv file upload - use --file option
--cn CVE_NUMBER, --cve_number CVE_NUMBER CVE number for the vulnerability -p {public,public_restricted,private,None},
+-h, --help show this help message and exit 
+--single Parameter based entry 
+--datafile csv file upload - use --file option
+
+-cn CVE_NUMBER, --cve_number CVE_NUMBER CVE number for the vulnerability 
+-p {public,public_restricted,private,None},
 --public_status {public,public_restricted,private,None} Public Status allowed values. Choices: public,
-public_restricted, private -e {production,non_production,None}, --environment {production,non_production,None}
-Environment for the asset. Choices: production, non_production, None -a {DB,Computer,Storage,None}, --assetType
-{DB,Computer,Storage,None} Asset Type allowed values. Choices: DB, Compute, Storage, None -s {critical,high,medium,low},
+public_restricted, private 
+-e {production,non_production,None}, --environment {production,non_production,None}
+Environment for the asset. Choices: production, non_production, None 
+-a {DB,Computer,Storage,None}, --assetType
+{DB,Computer,Storage,None} Asset Type allowed values. Choices: DB, Compute, Storage, None 
+-s {critical,high,medium,low},
 --criticality {critical,high,medium,low} Criticality Business value of asset. Choices: critical, high, medium, low
 --file FILE Provide a vulnerability/host via stdin (e.g. through piping) or --file -v, --verbose Increase output
 verbosity
 
-Example of using sample vulnerability data file in csv python3 ./ssvc/ssvc_ore.py --datafile --file
-./ssvc/data/csvs/data_vulnerability.csv -v
+Example of using sample vulnerability data file in csv 
+
+cd src
+python3 ./ssvc/ssvc_ore.py --datafile --file ./ssvc/data/csvs/data_vulnerability.csv -v
 
 Based on the initial work done at
 
