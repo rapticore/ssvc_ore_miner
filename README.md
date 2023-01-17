@@ -39,15 +39,6 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 
 optional arguments:
 
-| Command | Description |
-| --- | --- |
-| Patch Priority | Description |
-| act_now | Critical risk of compromise the production/critical asset is open to public, exploit is effective and can be used with minimum skills to create a significant impact.|
-| out-of-cycle | Increased risk of compromise patch ahead of the regular patching schedule |
-| schedule | Follow regular patching schedule for patch |
-| defer | Can be deferred |
-
-
 -h, --help show this help message and exit --single Parameter based entry --datafile csv file upload - use --file option
 
 -cn CVE_NUMBER, --cve_number CVE_NUMBER CVE number for the vulnerability -p {public,public_restricted,private,None}
@@ -65,6 +56,8 @@ optional arguments:
 Example of using sample vulnerability data file in csv
 
 `cd src python3 ./ssvc/ssvc_ore.py --datafile --file ./ssvc/data/csvs/data_vulnerability.csv -v`
+
+
 
 Based on the initial work done at
 
