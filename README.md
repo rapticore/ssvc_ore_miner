@@ -43,8 +43,12 @@ priority can be:
 ---------------
 
 usage:
+'''
 ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] [-e {production,non_production,None}]
 [-a {DB,Computer,Storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
+'''
+
+
 
 optional arguments:
 -h, --help show this help message and exit --single Parameter based entry --datafile csv file upload - use --file option
