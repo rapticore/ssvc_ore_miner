@@ -81,7 +81,7 @@ def main():
         "-a",
         "--assetType",
         help="Asset Type allowed values. Choices: DB, Compute, Storage, None",
-        choices=["DB", "Computer", "Storage", "None"],
+        choices=["DB", "Compute", "Storage", "None"],
         type=str,
     )
 
@@ -109,41 +109,46 @@ def main():
         default=False,
     )
 
-    log_level = logging.ERROR
+    log_level = logging.INFO
     log_format = "%(message)s"
 
     args = parser.parse_args()
 
     if args.verbose:
-        log_level = logging.INFO
-        log_format = "%(message)s"
+        log_level = logging.DEBUG
 
     logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
-
+    logging.debug('Initializing......')
     engine_check = helpers.initialize()
-    if engine_check:
-        if args.datafile:
-            data_file = args.file
-            reader = csv.DictReader(data_file)
-            for row in reader:
-                cve_number = str(row['cve_number'])
-                environment = str(row['environment'])
-                public_status = str(row['public_status'])
-                asset_type = str(row['assetType'])
-                asset_criticality = str(row['assetCriticality'])
-                ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
-        elif args.single:
-            cve_number = str(args.cve_number)
-            if cve_number:
-                environment = str(args.environment)
-                public_status = str(args.public_status)
-                asset_type = str(args.assetType)
-                asset_criticality = str(args.criticality)
-                ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
-    else:
+    if not engine_check:
+        logging.error('DB engine could not be Initialized')
         sys.exit(1)
 
-    helpers.exel_writer(combined_results)
+    logging.debug('DB engine Initialized')
+    if args.datafile:
+        logging.debug('Processing datafile')
+        data_file = args.file
+        reader = csv.DictReader(data_file)
+        for row in reader:
+            cve_number = str(row['cve_number'])
+            environment = str(row['environment'])
+            public_status = str(row['public_status'])
+            asset_type = str(row['assetType'])
+            asset_criticality = str(row['assetCriticality'])
+            ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
+    elif args.single:
+        logging.debug('Processing single parameter based entry')
+        cve_number = str(args.cve_number)
+        if cve_number:
+            environment = str(args.environment)
+            public_status = str(args.public_status)
+            asset_type = str(args.assetType)
+            asset_criticality = str(args.criticality)
+            ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
+
+    logging.debug('Writing results to excel file')
+    helpers.excel_writer(combined_results)
+    logging.info('Results written to excel file ssvc_recommendations.xlsx')
 
 
 if __name__ == "__main__":
