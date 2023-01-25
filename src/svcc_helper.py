@@ -2,9 +2,9 @@ import os
 import pandas as pd
 
 absolute_path = os.path.dirname(__file__)
-DATAPATH = "data/csvs"
+DATA_PATH = "data/csvs"
 
-full_path = os.path.join(absolute_path, DATAPATH)
+full_path = os.path.join(absolute_path, DATA_PATH)
 
 PATHS = {
     'deployer': os.path.join(full_path, "priority-options_v2.csv"),
@@ -88,29 +88,29 @@ def outcome_utility_dist(df, normalize=True):
 def calculate_impact(query):
     for key, df in DATA.items():
         df = lookup('impact', query)
-        return_recommednations = outcome_impact_dist(df).round(decimals=3).to_dict()
-        return_recommednations = list(return_recommednations.keys())[0]
-        return return_recommednations
+        recommendations = outcome_impact_dist(df).round(decimals=3).to_dict()
+        recommendations = list(recommendations.keys())[0]
+        return recommendations
 
 
 def calculate_utility(query):
     for key, df in DATA.items():
         df = lookup('utility', query)
-        return_recommednations = outcome_utility_dist(df).round(decimals=3).to_dict()
-        return_recommednations = list(return_recommednations.keys())[0]
-        return return_recommednations
+        recommendations = outcome_utility_dist(df).round(decimals=3).to_dict()
+        recommendations = list(recommendations.keys())[0]
+        return recommendations
 
 
 def calculate_recommendation(query):
     for key, df in DATA.items():
         df = lookup('deployer', query)
-        return_recommednations = outcome_dist(df).round(decimals=3).to_dict()
-        return return_recommednations
+        recommendations = outcome_dist(df).round(decimals=3).to_dict()
+        return recommendations
 
 
 def main(query):
-    recommednation = calculate_recommendation(query)
-    return recommednation
+    recommendations = calculate_recommendation(query)
+    return recommendations
 
 
 if __name__ == '__main__':

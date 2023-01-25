@@ -1,5 +1,4 @@
-from src.helpers import execute_db, process_cvss_score, nvd_praser
-from src.svcc_constants import PRODUCTION, NONPRODUCTION, DB, STORAGE, COMPUTE, VERYHIGH, HIGH, MEDIUM, LOW
+from src.helpers import execute_db, process_cvss_score, nvd_parser
 from src.svcc_helper import calculate_impact, calculate_utility
 
 
@@ -37,7 +36,7 @@ def vector_calculate_exploitability(cve_number, cvss_vector):
         exploit_status = "active"
         return exploit_status
     else:
-        exploit_status = nvd_praser(cvss_vector)
+        exploit_status = nvd_parser(cvss_vector)
         return exploit_status
 
 
@@ -129,9 +128,9 @@ def vector_calculate_utility(exploit, cvss_vector, public_status):
 
 def vector_calculate_impact(environment, asset_type, asset_criticality):
     """
-    Very High, High = Environment Production - Asset Type DB, Computer, Storage, Critical, High
+    Very High, High = Environment Production - Asset Type DB, Compute, Storage, Critical, High
     High, medium, low = Environment Production - Asset Type Everything else, high, medium, low
-    High = Environment Non-production - Asset Type DB, Computer, Storage, critical, high, medium, low
+    High = Environment Non-production - Asset Type DB, Compute, Storage, critical, high, medium, low
     High, medium, low = Environment Non-production - Asset Type Everything else, High, medium, low
 
     IMPACT = ["low", "medium", "high", "very high"]

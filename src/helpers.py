@@ -1,4 +1,5 @@
 import json
+import logging
 import sqlite3
 import requests
 import io
@@ -17,7 +18,8 @@ def execute_nvd_tbl_count():
     else:
         return None
 
-def execute_threatIntel_tbl_count():
+
+def execute_threat_intel_tbl_count():
     db_connection, conn = get_db_conn()[0], get_db_conn()[1]
     data = db_connection.execute(
         "SELECT COUNT(1) FROM threatIntel")
@@ -26,6 +28,7 @@ def execute_threatIntel_tbl_count():
         return data[0]
     else:
         return None
+
 
 def execute_nvd_tbl_query(query_data):
     db_connection, conn = get_db_conn()[0], get_db_conn()[1]
@@ -41,46 +44,46 @@ def execute_nvd_tbl_query(query_data):
 
 def get_db_conn():
     try:
-        conn = sqlite3.connect('threatdb.db')
-        foo_connection = conn.cursor()
-        if conn and foo_connection:
-            return foo_connection, conn
+        connection = sqlite3.connect('threatdb.db')
+        cursor = connection.cursor()
+        if connection and cursor:
+            return cursor, connection
         else:
             return None
     except Exception as e:
-        print(e)
+        logging.exception(e)
     return None
 
 
 def download_extract_zip(url):
     response = requests.get(url)
-    with zipfile.ZipFile(io.BytesIO(response.content)) as thezip:
-        for zipinfo in thezip.infolist():
-            with thezip.open(zipinfo) as thefile:
-                file = json.loads(thefile.read())
+    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
+        for zip_info in zip_file.infolist():
+            with zip_file.open(zip_info) as the_file:
+                file = json.loads(the_file.read())
                 return file
 
 
-def initialize_nvdb_tlb():
+def initialize_nvdb_tbl():
     try:
-        conn = sqlite3.connect('threatdb.db')
-        foo_connection = conn.cursor()
-        foo_connection.execute(
+        connection = sqlite3.connect('threatdb.db')
+        cursor = connection.cursor()
+        cursor.execute(
             "CREATE TABLE IF NOT EXISTS nvd (id varchar (25),cve_vector varchar(50), cve_score varchar(50),data json)")
         return True
     except Exception as e:
-        print(e)
+        logging.exception(e)
     return None
 
 
-def load_nvd_tlb(nvddata):
-    print("I am here in load_nvd_tlb")
+def load_nvd_tbl(nvd_data):
+    logging.debug("Loading NVD Table")
     db_connection = None
     conn = None
-    db_foo = get_db_conn()
-    if db_foo:
-        db_connection, conn = db_foo[0], db_foo[1]
-    for data in nvddata["CVE_Items"]:
+    db = get_db_conn()
+    if db:
+        db_connection, conn = db[0], db[1]
+    for data in nvd_data["CVE_Items"]:
         cve_id = data["cve"]['CVE_data_meta']['ID']
         impact = data['impact']
         if nested_lookup('vectorString', impact):
@@ -107,15 +110,15 @@ def get_nvd_data():
     else:
         years = ["2022", "2021", "2020", "2019", "2018"]
         for year in years:
-            zipurl = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
-            print(zipurl)
-            nvddata = download_extract_zip(zipurl)
-            load_nvd_tlb(nvddata)
+            zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
+            logging.debug("Downloading artifact {zip_url}")
+            nvd_data = download_extract_zip(zip_url)
+            load_nvd_tbl(nvd_data)
 
 
 def initialize_nvdb():
 
-    check = initialize_nvdb_tlb()
+    check = initialize_nvdb_tbl()
     if check:
         get_nvd_data()
         return True
@@ -123,13 +126,12 @@ def initialize_nvdb():
 
 def initialize_db():
     try:
-        conn = sqlite3.connect('threatdb.db')
-        # table_name = "threatIntel"
-        foo_connection = conn.cursor()
-        foo_connection.execute("CREATE TABLE IF NOT EXISTS threatIntel (id varchar (25), data json)")
+        connection = sqlite3.connect('threatdb.db')
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS threatIntel (id varchar (25), data json)")
         return True
     except Exception as e:
-        print(e)
+        logging.exception(e)
     return None
 
 
@@ -158,7 +160,7 @@ def initialize():
             # todo add check whether the db was loaded.
             return check
     except Exception as e:
-        print(e)
+        logging.exception(e)
 
 
 def execute_db(query_data):
@@ -175,15 +177,15 @@ def execute_db(query_data):
 
 def process_cvss_score(value):
     c_score = value.split("/")
-    foo_dic = {}
+    result = {}
     for val in c_score:
         key = val.split(":")[0]
         s_value = val.split(":")[1]
-        foo_dic[key] = s_value
-    return foo_dic
+        result[key] = s_value
+    return result
 
 
-def nvd_praser(cvss_vector):
+def nvd_parser(cvss_vector):
     score_dict = process_cvss_score(cvss_vector)
     if score_dict.get("E"):
         if score_dict.get("E") == "U":
@@ -207,7 +209,8 @@ def input_cve_get_nvd_data(cve_number):
     nvd_data = execute_nvd_tbl_query(cve_number)
     return nvd_data
 
-def exel_writer(data):
+
+def excel_writer(data):
     try:
         # Create a Pandas Excel writer using XlsxWriter as the engine.
         writer = pd.ExcelWriter('ssvc_recommendations.xlsx', engine='xlsxwriter')
@@ -218,4 +221,4 @@ def exel_writer(data):
         # Close the Pandas Excel writer and output the Excel file.
         writer.close()
     except Exception as e:
-        print(e)
+        logging.exception(e)
