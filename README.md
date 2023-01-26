@@ -5,7 +5,7 @@ Stakeholder Specific Vulnerability Categorization Ore Miner
 
 
 The Stakeholder-specific Vulnerability Categorization (SSVC) is a system for prioritizing actions during vulnerability management. SSVC aims to avoid one-size-fits-all solutions in favor of a modular decision-making system with clearly defined and tested parts that vulnerability managers can select and use as appropriate to their context.
-SSVC Ore Miner extends and simplifies that work by automating the process of calculating patch priority. Common Vulnerability Scoring System(CVSS) does not address the context of the vulnerable asset. 
+SSVC Ore Miner extends and simplifies that work by automating the process of calculating patch priority. A known shortcoming of Common Vulnerability Scoring System(CVSS) does not address the context of the vulnerable asset. Additionally Risk based prioritization does not take into real life consequences of deffering low priority systems with critical actively exploited vulnerabilities. SSVC aims to improving on those methods by using asset context, vulnerability intelligence to make more informed decisions that can be backed up well understood logic. The decision criteria is included for inspection, modificantion and updates and can be extended to meet specific use cases. 
 
 By contextualizing the vulnerability in the asset, we can produce much better prioritization and security outcomes that can help security teams focus on the vulnerabilities that can lead to a compromise. The context for the vulnerability and asset is created through the following matrix: 
 
