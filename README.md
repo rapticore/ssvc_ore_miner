@@ -48,9 +48,13 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 
 `--datafile csv file upload - use --file option`
 
+'-id, --asset_id Asset Identifier(optional)'
+
 `-cn CVE_NUMBER, --cve_number CVE_NUMBER CVE number for the vulnerability`
 
 `-p {public,public_restricted,private,None} --public_status {public,public_restricted,private,None} Public Status, allowed values: public, public_restricted, private`
+
+'-vs, {critical,high,medium,low} --vul_severity Vulnerability Severity where CVE Number is not available. CVE takes precedence'
 
 `-e {production,non_production,None}, --environment {production,non_production,None} Environment for the asset. Choices: production, non_production, None -a {DB,Computer,Storage,None}`
 
