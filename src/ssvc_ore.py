@@ -17,32 +17,51 @@ class SetEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
+def xstr(s):
+    if s == "None":
+        return None
+    else:
+        return str(s)
 
-def ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality):
+
+def ssvc_recommendations(asset,vul_details, public_status, environment, asset_type, asset_criticality):
     query = {}
     description = None
-    get_data = helpers.input_cve_get_nvd_data(cve_number)
-    cvss_vector, cvss_score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
+    severity_list = ["critical", "high", "medium", "low"]
+    severity_priority = ["critical", "high"]
+    cvss_vector = None
+    nvd_data_local = None
+    score = None
+    if vul_details in severity_list:
+        score = vul_details
+        if vul_details in severity_priority:
+            exploit_status = "active"
+        else:
+            exploit_status = "None"
+    else:
+        get_data = helpers.input_cve_get_nvd_data(vul_details)
+        cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
+        exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+        try:
+            description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
+        except Exception as e:
+            logging.error(e)
 
-    try:
-        description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
-    except Exception as e:
-        logging.error(e)
-
-    exploit_status = vector_calculate_exploitability(cve_number, cvss_vector)
     query["Exploitation"] = exploit_status
-    query["Exposure"] = vector_calculate_exposure(cvss_score)
-    query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status)
+    query["Exposure"] = vector_calculate_exposure(score)
+    query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status, score)
     query["Impact"] = vector_calculate_impact(environment, asset_type, asset_criticality)
 
     recommendation = src.svcc_helper.calculate_recommendation(query)
     recommendation = list(recommendation.keys())[0]
 
-    results = dict(description=description, cve=cve_number, cvss_score=cvss_score, cvss_vector=cvss_vector,
+    results = dict(asset=asset, description=description, cve=vul_details, vulnerability_score=score, cvss_vector=cvss_vector,
                    asset_type=asset_type, environment=environment,
-                   public_status=public_status, ssvc_rec=recommendation)
+                   public_status=public_status, asset_criticality=asset_criticality, ssvc_rec=recommendation)
 
+    logging.info(results)
     combined_results.append(results)
+    return results
 
 
 def main():
@@ -53,6 +72,14 @@ def main():
     group.add_argument('--datafile', help="csv file upload - use --file option", action='store_true')
 
     parser.add_argument(
+        "-id",
+        "--asset_id",
+        help="Asset Identifier",
+        default=None,
+        type=str,
+    )
+
+    parser.add_argument(
         "-cn",
         "--cve_number",
         help="CVE number for the vulnerability",
@@ -60,12 +87,21 @@ def main():
         type=str,
     )
 
+
     parser.add_argument(
         "-p",
         "--public_status",
         help="Public Status allowed values. Choices: public, public_restricted, private",
         default="None",
         choices=["public", "public_restricted", "private", "None"],
+        type=str,
+    )
+    parser.add_argument(
+        "-vs",
+        "--vul_severity",
+        help="Vulnerability Severity",
+        default="None",
+        choices=["critical", "high", "medium", "low"],
         type=str,
     )
 
@@ -130,23 +166,40 @@ def main():
         data_file = args.file
         reader = csv.DictReader(data_file)
         for row in reader:
-            cve_number = str(row['cve_number'])
-            environment = str(row['environment'])
-            public_status = str(row['public_status'])
-            asset_type = str(row['assetType'])
-            asset_criticality = str(row['assetCriticality'])
-            ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
+            asset_id = str(row['asset_id']).rstrip()
+            cve_number = str(row['cve_number']).rstrip()
+            cve_number = xstr(cve_number)
+            vul_severity = str(row['vul_severity']).rstrip()
+            environment = str(row['environment']).rstrip()
+            public_status = str(row['public_status']).rstrip()
+            asset_type = str(row['assetType']).rstrip()
+            asset_criticality = str(row['assetCriticality']).rstrip()
+
+            if cve_number:
+                ssvc_recommendations(asset_id, cve_number, public_status, environment, asset_type, asset_criticality)
+            elif vul_severity:
+                ssvc_recommendations(asset_id,vul_severity, public_status, environment, asset_type, asset_criticality)
     elif args.single:
         logging.debug('Processing single parameter based entry')
         cve_number = str(args.cve_number)
+        cve_number = xstr(cve_number)
+        vul_severity = str(args.vul_severity)
         if cve_number:
+            asset_id = str(args.asset_id)
             environment = str(args.environment)
             public_status = str(args.public_status)
             asset_type = str(args.assetType)
             asset_criticality = str(args.criticality)
-            ssvc_recommendations(cve_number, public_status, environment, asset_type, asset_criticality)
+            ssvc_recommendations(asset_id,cve_number, public_status, environment, asset_type, asset_criticality)
+        elif vul_severity:
+            asset_id = str(args.asset_id).rstrip()
+            environment = str(args.environment)
+            public_status = str(args.public_status)
+            asset_type = str(args.assetType)
+            asset_criticality = str(args.criticality)
+            ssvc_recommendations(asset_id, vul_severity, public_status, environment, asset_type, asset_criticality)
 
-    logging.debug('Writing results to excel file')
+    logging.info('Writing results to excel file')
     helpers.excel_writer(combined_results)
     logging.info('Results written to excel file ssvc_recommendations.xlsx')
 

@@ -54,21 +54,31 @@ def vector_calculate_exposure(score):
     the behavior of the vulnerable component.
     Partial => limited, controlled
     C:L or I:L or A:H and PR:H
-    CVSS Score 0 --> 6.9 => unlikely exposure
-    CVSS Score 7 --> 8.9 == probable exposure
-    CVSS Score 9 --> 10 == unavoidable exposure
+    CVSS Score 0/low/medium --> 6.9 => unlikely exposure
+    CVSS Score 7 --> 8.9/high == probable exposure
+    CVSS Score 9 --> 10/critical == unavoidable exposure
     """
+    severity_list = ["critical", "high", "medium", "low"]
+    severity_priority = ["critical", "high"]
+    severity_defer = ["medium", "low"]
+    if score in severity_list:
+        if score == "critical":
+            return "unavoidable"
+        elif score == "high":
+            return "probable"
+        elif score in severity_defer:
+            return "unlikely"
+    else:
+        score = float(score)
+        if score >= 9.0:
+            return "unavoidable"
+        elif 7.0 <= score <= 8.9:
+            return "probable"
+        elif score <= 6.9:
+            return "unlikely"
 
-    score = float(score)
-    if score >= 9.0:
-        return "unavoidable"
-    elif 7.0 <= score <= 8.9:
-        return "probable"
-    elif score <= 6.9:
-        return "unlikely"
 
-
-def vector_calculate_utility(exploit, cvss_vector, public_status):
+def vector_calculate_utility(exploit, cvss_vector, public_status, score):
     """
     Effort required to use the vulnerability
     Utility = ["laborious", "complex", "effortless"]
@@ -118,12 +128,24 @@ def vector_calculate_utility(exploit, cvss_vector, public_status):
 
 
     """
-
-    vector_dict = process_cvss_score(cvss_vector)
-    query = {"exploit": exploit, "attack_vector": vector_dict.get("AV"), "user_interaction": vector_dict.get("UI"),
-             "public_status": public_status}
-    utility = calculate_utility(query)
-    return utility
+    severity_list = ["critical", "high", "medium", "low"]
+    severity_priority = ["critical", "high"]
+    attack_vector, user_interaction = None, None
+    if cvss_vector:
+        vector_dict = process_cvss_score(cvss_vector)
+        query = {"exploit": exploit, "attack_vector": vector_dict.get("AV"), "user_interaction": vector_dict.get("UI"),
+                 "public_status": public_status}
+        utility = calculate_utility(query)
+        return utility
+    else:
+        if score in severity_priority:
+            attack_vector, user_interaction = "N", "N"
+        else:
+            attack_vector, user_interaction = "L", "R"
+        query = {"exploit": exploit, "attack_vector": attack_vector, "user_interaction": user_interaction,
+                 "public_status": public_status}
+        utility = calculate_utility(query)
+        return utility
 
 
 def vector_calculate_impact(environment, asset_type, asset_criticality):
