@@ -29,6 +29,7 @@ The prioritization matrix uses the above vector to produce a patch priority. The
 | out-of-cycle   | Increased risk of compromise patch ahead of the regular patching schedule                                                                                              |
 | schedule       | Follow regular patching schedule for patch                                                                                                                             |
 | defer          | Can be deferred                                                                                                                                                        |
+| review          | New or yet undisclosed vulnerability - a CVSS vector has not been assigned for this vulnerability.                                                                    |
 
 ---------------
 
