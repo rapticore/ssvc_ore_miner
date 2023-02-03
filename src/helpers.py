@@ -102,13 +102,14 @@ def load_nvd_tbl(nvd_data):
 def get_nvd_data():
     """
     check first if the data is already present.
+    Add a years in the years array to grab additional data from NVD for that year. Reduced
 
     """
     check = execute_nvd_tbl_count()
     if check:
         return True
     else:
-        years = ["2022", "2021", "2020", "2019", "2018"]
+        years = ["2023","2022", "2021", "2020", "2019", "2018"]
         for year in years:
             zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
             logging.debug("Downloading artifact {zip_url}")

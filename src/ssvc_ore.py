@@ -23,6 +23,12 @@ def xstr(s):
     else:
         return str(s)
 
+def xstr_asset_criticality(s):
+    if s == "None":
+        return "high"
+    else:
+        return str(s)
+
 
 def ssvc_recommendations(asset,vul_details, public_status, environment, asset_type, asset_criticality):
     query = {}
@@ -32,6 +38,8 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     cvss_vector = None
     nvd_data_local = None
     score = None
+    exploit_status = None
+    recommendation = None
     if vul_details in severity_list:
         score = vul_details
         if vul_details in severity_priority:
@@ -39,9 +47,14 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
         else:
             exploit_status = "None"
     else:
-        get_data = helpers.input_cve_get_nvd_data(vul_details)
-        cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
-        exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+        try:
+            get_data = helpers.input_cve_get_nvd_data(vul_details)
+            cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
+            exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+        except Exception as e:
+            logging.error(e)
+
+            #todo handle this
         try:
             description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
         except Exception as e:
@@ -53,7 +66,10 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     query["Impact"] = vector_calculate_impact(environment, asset_type, asset_criticality)
 
     recommendation = src.svcc_helper.calculate_recommendation(query)
-    recommendation = list(recommendation.keys())[0]
+    if recommendation:
+        recommendation = list(recommendation.keys())[0]
+    else:
+        recommendation = "review"
 
     results = dict(asset=asset, description=description, cve=vul_details, vulnerability_score=score, cvss_vector=cvss_vector,
                    asset_type=asset_type, environment=environment,
@@ -110,6 +126,7 @@ def main():
         "--environment",
         help="Environment for the asset. Choices: production, non_production, None",
         choices=["production", "non_production", "None"],
+        default="None",
         type=str,
     )
 
@@ -118,13 +135,14 @@ def main():
         "--assetType",
         help="Asset Type allowed values. Choices: DB, Compute, Storage, None",
         choices=["DB", "Compute", "Storage", "None"],
+        default="None",
         type=str,
     )
 
     parser.add_argument(
         "-s",
         "--criticality",
-        help="Criticality Business value of asset. Choices: critical, high, medium, low",
+        help="Business Criticality of an asset. Choices: critical, high, medium, low",
         choices=["critical", "high", "medium", "low"],
         type=str,
         default="high"
@@ -174,6 +192,7 @@ def main():
             public_status = str(row['public_status']).rstrip()
             asset_type = str(row['assetType']).rstrip()
             asset_criticality = str(row['assetCriticality']).rstrip()
+            asset_criticality = xstr_asset_criticality(asset_criticality)
 
             if cve_number:
                 ssvc_recommendations(asset_id, cve_number, public_status, environment, asset_type, asset_criticality)
@@ -190,6 +209,7 @@ def main():
             public_status = str(args.public_status)
             asset_type = str(args.assetType)
             asset_criticality = str(args.criticality)
+
             ssvc_recommendations(asset_id,cve_number, public_status, environment, asset_type, asset_criticality)
         elif vul_severity:
             asset_id = str(args.asset_id).rstrip()

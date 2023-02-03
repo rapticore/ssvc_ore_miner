@@ -68,7 +68,7 @@ def vector_calculate_exposure(score):
             return "probable"
         elif score in severity_defer:
             return "unlikely"
-    else:
+    elif score:
         score = float(score)
         if score >= 9.0:
             return "unavoidable"

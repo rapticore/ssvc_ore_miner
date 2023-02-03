@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import logging
 
 absolute_path = os.path.dirname(__file__)
 DATA_PATH = "data/csvs"
@@ -95,10 +96,14 @@ def calculate_impact(query):
 
 def calculate_utility(query):
     for key, df in DATA.items():
-        df = lookup('utility', query)
-        recommendations = outcome_utility_dist(df).round(decimals=3).to_dict()
-        recommendations = list(recommendations.keys())[0]
-        return recommendations
+        try:
+            df = lookup('utility', query)
+            recommendations = outcome_utility_dist(df).round(decimals=3).to_dict()
+            recommendations = list(recommendations.keys())[0]
+            return recommendations
+        except Exception as e:
+            logging.error(e)
+            return "complex"
 
 
 def calculate_recommendation(query):
