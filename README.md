@@ -44,8 +44,8 @@ If available the Asset Context is then used to further Prioritize. A decision tr
 https://attack.mitre.org/matrices/enterprise/
 
 ***Decision Tree***
-Each vector is calculated independently to create a query for the final Decision tree. This returns the Vulnerability Prioritization for each vulnerability in the context of the asset. ![image](https://user-images.githubusercontent.com/15623989/217443320-7978b2ce-a6a6-4ce2-9b57-f58e447a434c.png)
- 
+Each vector is calculated independently to create a query for the final Decision tree. This returns the Vulnerability Prioritization for each vulnerability in the context of the asset. 
+
 
 ***Usage***:
 ```commandline
