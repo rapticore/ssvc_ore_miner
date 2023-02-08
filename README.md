@@ -22,7 +22,7 @@ Checks the likelihood of exposure if the exploit is used against a vulnerable as
 
 The prioritization matrix uses the above vector to produce a patch priority. The patch priority can be:
 
-
+https://github.com/CERTCC/SSVC
 | Patch Priority | Description                                                                                                                                                            |
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | act_now        | Critical risk of compromise, the production/critical asset is open to public, exploit is effective and can be used with minimum skills to create a significant impact. |
