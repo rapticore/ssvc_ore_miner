@@ -33,12 +33,25 @@ The prioritization matrix uses the above vector to produce a patch priority. The
 
 ---------------
 
+**SSVC Ore Miner Internals**
+
+
+***Opensource Threat Intelligence:***
+Ore Miner starts by pulling in Known Exploitable Vulnerability Catalog and NVD vulnerability Data from CISA and NIST. This data is used to check for exploitability status of the CVE and analysis of the CVSS score. The Ore Miner will still recommend Remediation Prirotization but it will not be Asset Context Aware - this takes into account whether the exploitate is an RCE or whether it requires User interaction. These factors are used to calculate the Exploitability and Utility of the vulnerability. 
+
+***Asset Context***
+If available the Asset Context is then used to further Prioritize. A decision tree is used to calculated Exposure, Utility and Impact. Each Vector is independently calculated. MITRE ATT&CK(R) Matrix for cloud is used to to map first four stages of Attack - Reconnaniness, Resource Development, Initial Access and Execution - for each asset first 4 stages are calculated in the context of the vulnerability. 
+https://attack.mitre.org/matrices/enterprise/
+
+***Decision Tree***
+Each vector is calculated independently to create a query for the final Decision tree. This returns the Vulnerability Prioritization for each vulnerability in the context of the asset. ![image](https://user-images.githubusercontent.com/15623989/217443320-7978b2ce-a6a6-4ce2-9b57-f58e447a434c.png)
+ 
+
 ***Usage***:
 ```commandline
 ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] [-e {production,non_production,None}]
 [-a {DB,Compute,Storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
 ```
-
 
 
 ***Optional Arguments***:
