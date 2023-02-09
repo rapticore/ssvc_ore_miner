@@ -90,11 +90,20 @@ python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r requirements.txt --upgrade
 export PYTHONPATH=.
-python3 src/ssvc_ore.py --datafile --file ./src/data/csvs/data_vulnerability.csv -v 
+python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/data_vulnerability.csv -v 
 ```
 
+
+***Use as a package***
+```shell
+pip install rapticoressvc
+from rapticoressvc import start_script
+
+start_script(asset_id, cve_number_or_severity, public_status, environment, asset_type, asset_criticality)
+```
 Based on the initial work done at
 
 @inproceedings{spring2020ssvc, title={Prioritizing vulnerability response: {A} stakeholder-specific vulnerability
 categorization}, author={Jonathan M Spring and Eric Hatleback and Allen D. Householder and Art Manion and Deana Shick},
 address={Brussels, Belgium}, year={2020}, month = dec, booktitle = {Workshop on the Economics of Information Security} }
+

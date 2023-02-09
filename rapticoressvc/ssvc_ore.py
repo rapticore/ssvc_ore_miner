@@ -3,9 +3,9 @@ import logging
 import argparse
 import csv
 import sys
-import src.svcc_helper
-from src import helpers
-from src.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
+import rapticoressvc.svcc_helper
+from rapticoressvc import helpers
+from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
     vector_calculate_exploitability, vector_calculate_impact
 
 combined_results = []
@@ -65,7 +65,7 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status, score)
     query["Impact"] = vector_calculate_impact(environment, asset_type, asset_criticality)
 
-    recommendation = src.svcc_helper.calculate_recommendation(query)
+    recommendation = rapticoressvc.svcc_helper.calculate_recommendation(query)
     if recommendation:
         recommendation = list(recommendation.keys())[0]
     else:
@@ -210,7 +210,7 @@ def main():
             asset_type = str(args.assetType)
             asset_criticality = str(args.criticality)
 
-            ssvc_recommendations(asset_id,cve_number, public_status, environment, asset_type, asset_criticality)
+            ssvc_recommendations(asset_id, cve_number, public_status, environment, asset_type, asset_criticality)
         elif vul_severity:
             asset_id = str(args.asset_id).rstrip()
             environment = str(args.environment)

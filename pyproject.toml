@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rapticoressvc"
+version = "0.0.1"
+authors = [
+  { name="Rapticore", email="zeeshan.ahmad@rapticore.com" },
+]
+description = "Rapticore SSVC"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ['nose',
+'cvss',
+'pandas',
+'nested_lookup',
+'xlsxwriter',
+'requests',
+'jmespath',
+'docutils',
+'beautifulsoup4',
+'soupsieve',
+'gitdb',
+'pip',
+"attrs",
+'toml',
+'wheel',
+'Jinja2',
+'lark',
+'regex',
+'setuptools',
+'pytz',
+'colorama',
+'PyYAML',
+'idna',
+'multidict',
+'Babel',
+'botocore',
+'boto3',
+'s3transfer',
+'dpath',
+'smmap',
+'numpy',
+'cffi',
+'pycares',
+'websocket-client',
+'packaging',
+'docker',
+'MarkupSafe',
+'python-dateutil',
+'snowballstemmer',
+'imagesize',
+'urllib3',
+'Pygments',
+'yarl',
+'aiohttp',
+'aiosignal',
+'frozenlist',
+'aiodns',
+'certifi',
+'checkov',
+'networkx',
+'jsonschema',
+'termcolor',
+'click',
+'tqdm',
+'tabulate',
+'ConfigArgParse',
+'aiomultiprocess',
+'cachetools',
+'argcomplete',
+'cloudsplaining',
+'policyuniverse',
+'prettytable',
+'cvsslib',
+'six',
+'wcwidth',
+'Markdown',
+'alabaster',
+'sortedcontainers',
+'schema',
+'ply',
+'pycparser',
+'pyrsistent',
+'zipp'
+]
+
+[project.urls]
+"Homepage" = "https://github.com/rapticore/ssvc_ore_miner"
+"Bug Tracker" = "https://github.com/rapticore/ssvc_ore_miner/issues"

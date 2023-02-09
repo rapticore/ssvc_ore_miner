@@ -3,9 +3,8 @@ import pandas as pd
 import logging
 
 absolute_path = os.path.dirname(__file__)
-DATA_PATH = "data/csvs"
 
-full_path = os.path.join(absolute_path, DATA_PATH)
+full_path = absolute_path
 
 PATHS = {
     'deployer': os.path.join(full_path, "priority-options_v2.csv"),
