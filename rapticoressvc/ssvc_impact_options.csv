@@ -13,7 +13,7 @@ row,Environment,AssetType,AssetCriticality,Impact
 12,None,compute,low,medium
 13,production,db,critical,very high
 14,production,db,high,very high
-15,production,db,Medium,high
+15,production,db,medium,high
 16,production,db,Low,medium
 17,non_production,db,critical,high
 18,non_production,db,high,high

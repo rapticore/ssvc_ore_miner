@@ -110,6 +110,8 @@ python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/data_vulnera
 ***Use as a package***
 ```shell
 pip install rapticoressvc
+```
+```shell
 from rapticoressvc import start_script
 
 start_script(asset_id, cve_number_or_severity, public_status, environment, asset_type, asset_criticality)
