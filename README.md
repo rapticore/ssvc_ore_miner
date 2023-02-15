@@ -97,6 +97,15 @@ export PYTHONPATH=.
 python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/data_vulnerability.csv -v 
 ```
 
+***Publish the package***
+1. Update the version in pyproject.toml
+2. ```shell
+    python setup.py sdist bdist_wheel
+   // To upload to testpypi
+    python -m twine upload --repository testpypi dist/* 
+   // To upload to pypi
+    python -m twine upload dist/*
+    ```
 
 ***Use as a package***
 ```shell
