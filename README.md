@@ -54,7 +54,7 @@ Each vector is calculated independently to create a query for the final Decision
 ***Usage***:
 ```commandline
 ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] [-e {production,non_production,None}]
-[-a {DB,compute,storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
+[-a {db,compute,storage,None,network}] [-s {critical,high,medium,low}] [--file FILE] [-v]
 ```
 
 
