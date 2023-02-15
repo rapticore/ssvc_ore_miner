@@ -54,7 +54,7 @@ Each vector is calculated independently to create a query for the final Decision
 ***Usage***:
 ```commandline
 ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] [-e {production,non_production,None}]
-[-a {DB,Compute,Storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
+[-a {DB,compute,storage,None}] [-s {critical,high,medium,low}] [--file FILE] [-v]
 ```
 
 
@@ -76,7 +76,7 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 
 `-e {production,non_production,None}, --environment {production,non_production,None} Environment for the asset. Choices: production, non_production, None -a {DB,Computer,Storage,None}`
 
-`--assetType {DB,Computer,Storage,None} Asset Type allowed values. Choices: DB, Compute, Storage, None`
+`--assetType {db,Computer,Storage,None, network} Asset Type allowed values. Choices: db, compute, storage, None, network`
 
 `-s {critical,high,medium,low}, --criticality {critical,high,medium,low} Criticality Business value of asset. Choices: critical, high, medium, low`
 

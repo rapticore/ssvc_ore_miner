@@ -43,7 +43,7 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     if vul_details in severity_list:
         score = vul_details
         if vul_details in severity_priority:
-            exploit_status = "active"
+            exploit_status = "PoC"
         else:
             exploit_status = "None"
     else:
@@ -134,7 +134,7 @@ def main():
         "-a",
         "--assetType",
         help="Asset Type allowed values. Choices: DB, Compute, Storage, None",
-        choices=["DB", "Compute", "Storage", "None"],
+        choices=["db", "compute", "storage", "None", "network"],
         default="None",
         type=str,
     )
@@ -218,6 +218,9 @@ def main():
             asset_type = str(args.assetType)
             asset_criticality = str(args.criticality)
             ssvc_recommendations(asset_id, vul_severity, public_status, environment, asset_type, asset_criticality)
+    else:
+        parser.print_help()
+        exit(1)
 
     logging.info('Writing results to excel file')
     helpers.excel_writer(combined_results)

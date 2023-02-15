@@ -1,105 +1,105 @@
 row,Exploitation,Exposure,Utility,Impact,Priority
 1,None,unlikely,laborious,low,defer
 2,None,unlikely,laborious,medium,defer
-3,None,unlikely,laborious,high,scheduled
-4,None,unlikely,laborious,very high,scheduled
+3,None,unlikely,laborious,high,schedule
+4,None,unlikely,laborious,very high,schedule
 5,None,unlikely,complex,low,defer
-6,None,unlikely,complex,medium,scheduled
-7,None,unlikely,complex,high,scheduled
-8,None,unlikely,complex,very high,scheduled
+6,None,unlikely,complex,medium,schedule
+7,None,unlikely,complex,high,schedule
+8,None,unlikely,complex,very high,schedule
 9,None,unlikely,effortless,low,defer
-10,None,unlikely,effortless,medium,scheduled
-11,None,unlikely,effortless,high,scheduled
-12,None,unlikely,effortless,very high,scheduled
+10,None,unlikely,effortless,medium,schedule
+11,None,unlikely,effortless,high,schedule
+12,None,unlikely,effortless,very high,schedule
 13,None,probable,laborious,low,defer
-14,None,probable,laborious,medium,scheduled
-15,None,probable,laborious,high,scheduled
-16,None,probable,laborious,very high,scheduled
+14,None,probable,laborious,medium,schedule
+15,None,probable,laborious,high,schedule
+16,None,probable,laborious,very high,schedule
 17,None,probable,complex,low,defer
-18,None,probable,complex,medium,scheduled
-19,None,probable,complex,high,scheduled
-20,None,probable,complex,very high,scheduled
-21,None,probable,effortless,low,scheduled
-22,None,probable,effortless,medium,scheduled
-23,None,probable,effortless,high,scheduled
-24,None,probable,effortless,very high,scheduled
+18,None,probable,complex,medium,schedule
+19,None,probable,complex,high,schedule
+20,None,probable,complex,very high,schedule
+21,None,probable,effortless,low,schedule
+22,None,probable,effortless,medium,schedule
+23,None,probable,effortless,high,schedule
+24,None,probable,effortless,very high,schedule
 25,None,unavoidable,laborious,low,defer
-26,None,unavoidable,laborious,medium,scheduled
-27,None,unavoidable,laborious,high,scheduled
-28,None,unavoidable,laborious,very high,scheduled
-29,None,unavoidable,complex,low,scheduled
-30,None,unavoidable,complex,medium,scheduled
-31,None,unavoidable,complex,high,scheduled
-32,None,unavoidable,complex,very high,scheduled
-33,None,unavoidable,effortless,low,scheduled
-34,None,unavoidable,effortless,medium,scheduled
-35,None,unavoidable,effortless,high,scheduled
+26,None,unavoidable,laborious,medium,schedule
+27,None,unavoidable,laborious,high,schedule
+28,None,unavoidable,laborious,very high,schedule
+29,None,unavoidable,complex,low,schedule
+30,None,unavoidable,complex,medium,schedule
+31,None,unavoidable,complex,high,schedule
+32,None,unavoidable,complex,very high,schedule
+33,None,unavoidable,effortless,low,schedule
+34,None,unavoidable,effortless,medium,schedule
+35,None,unavoidable,effortless,high,schedule
 36,None,unavoidable,effortless,very high,out-of-cycle
 37,PoC,unlikely,laborious,low,defer
-38,PoC,unlikely,laborious,medium,scheduled
-39,PoC,unlikely,laborious,high,scheduled
-40,PoC,unlikely,laborious,very high,scheduled
+38,PoC,unlikely,laborious,medium,schedule
+39,PoC,unlikely,laborious,high,schedule
+40,PoC,unlikely,laborious,very high,schedule
 41,PoC,unlikely,complex,low,defer
-42,PoC,unlikely,complex,medium,scheduled
-43,PoC,unlikely,complex,high,scheduled
-44,PoC,unlikely,complex,very high,scheduled
-45,PoC,unlikely,effortless,low,scheduled
-46,PoC,unlikely,effortless,medium,scheduled
-47,PoC,unlikely,effortless,high,scheduled
-48,PoC,unlikely,effortless,very high,scheduled
+42,PoC,unlikely,complex,medium,schedule
+43,PoC,unlikely,complex,high,schedule
+44,PoC,unlikely,complex,very high,schedule
+45,PoC,unlikely,effortless,low,schedule
+46,PoC,unlikely,effortless,medium,schedule
+47,PoC,unlikely,effortless,high,schedule
+48,PoC,unlikely,effortless,very high,schedule
 49,PoC,probable,laborious,low,defer
-50,PoC,probable,laborious,medium,scheduled
-51,PoC,probable,laborious,high,scheduled
-52,PoC,probable,laborious,very high,scheduled
-53,PoC,probable,complex,low,scheduled
-54,PoC,probable,complex,medium,scheduled
-55,PoC,probable,complex,high,scheduled
-56,PoC,probable,complex,very high,scheduled
-57,PoC,probable,effortless,low,scheduled
-58,PoC,probable,effortless,medium,scheduled
-59,PoC,probable,effortless,high,scheduled
+50,PoC,probable,laborious,medium,schedule
+51,PoC,probable,laborious,high,schedule
+52,PoC,probable,laborious,very high,schedule
+53,PoC,probable,complex,low,schedule
+54,PoC,probable,complex,medium,schedule
+55,PoC,probable,complex,high,schedule
+56,PoC,probable,complex,very high,schedule
+57,PoC,probable,effortless,low,schedule
+58,PoC,probable,effortless,medium,schedule
+59,PoC,probable,effortless,high,schedule
 60,PoC,probable,effortless,very high,out-of-cycle
 61,PoC,unavoidable,laborious,low,defer
-62,PoC,unavoidable,laborious,medium,scheduled
-63,PoC,unavoidable,laborious,high,scheduled
+62,PoC,unavoidable,laborious,medium,schedule
+63,PoC,unavoidable,laborious,high,schedule
 64,PoC,unavoidable,laborious,very high,out-of-cycle
-65,PoC,unavoidable,complex,low,scheduled
-66,PoC,unavoidable,complex,medium,scheduled
-67,PoC,unavoidable,complex,high,scheduled
+65,PoC,unavoidable,complex,low,schedule
+66,PoC,unavoidable,complex,medium,schedule
+67,PoC,unavoidable,complex,high,schedule
 68,PoC,unavoidable,complex,very high,out-of-cycle
-69,PoC,unavoidable,effortless,low,scheduled
-70,PoC,unavoidable,effortless,medium,scheduled
+69,PoC,unavoidable,effortless,low,schedule
+70,PoC,unavoidable,effortless,medium,schedule
 71,PoC,unavoidable,effortless,high,out-of-cycle
 72,PoC,unavoidable,effortless,very high,out-of-cycle
-73,active,unlikely,laborious,low,scheduled
-74,active,unlikely,laborious,medium,scheduled
+73,active,unlikely,laborious,low,schedule
+74,active,unlikely,laborious,medium,schedule
 75,active,unlikely,laborious,high,out-of-cycle
 76,active,unlikely,laborious,very high,out-of-cycle
-77,active,unlikely,complex,low,scheduled
-78,active,unlikely,complex,medium,scheduled
+77,active,unlikely,complex,low,schedule
+78,active,unlikely,complex,medium,schedule
 79,active,unlikely,complex,high,out-of-cycle
 80,active,unlikely,complex,very high,out-of-cycle
-81,active,unlikely,effortless,low,scheduled
-82,active,unlikely,effortless,medium,scheduled
+81,active,unlikely,effortless,low,schedule
+82,active,unlikely,effortless,medium,schedule
 83,active,unlikely,effortless,high,out-of-cycle
 84,active,unlikely,effortless,very high,out-of-cycle
-85,active,probable,laborious,low,scheduled
-86,active,probable,laborious,medium,scheduled
+85,active,probable,laborious,low,schedule
+86,active,probable,laborious,medium,schedule
 87,active,probable,laborious,high,out-of-cycle
 88,active,probable,laborious,very high,out-of-cycle
-89,active,probable,complex,low,scheduled
-90,active,probable,complex,medium,scheduled
+89,active,probable,complex,low,schedule
+90,active,probable,complex,medium,schedule
 91,active,probable,complex,high,out-of-cycle
 92,active,probable,complex,very high,out-of-cycle
-93,active,probable,effortless,low,scheduled
+93,active,probable,effortless,low,schedule
 94,active,probable,effortless,medium,out-of-cycle
 95,active,probable,effortless,high,out-of-cycle
 96,active,probable,effortless,very high,out-of-cycle
-97,active,unavoidable,laborious,low,scheduled
-98,active,unavoidable,laborious,medium,scheduled
+97,active,unavoidable,laborious,low,schedule
+98,active,unavoidable,laborious,medium,schedule
 99,active,unavoidable,laborious,high,out-of-cycle
 100,active,unavoidable,laborious,very high,act_now
-101,active,unavoidable,complex,low,scheduled
+101,active,unavoidable,complex,low,schedule
 102,active,unavoidable,complex,medium,out-of-cycle
 103,active,unavoidable,complex,high,act_now
 104,active,unavoidable,complex,very high,act_now
