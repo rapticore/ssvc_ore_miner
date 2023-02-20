@@ -1,8 +1,11 @@
 import json
 import logging
 import argparse
+import datetime
 import csv
 import sys
+import os
+from pathlib import Path
 import rapticoressvc.svcc_helper
 from rapticoressvc import helpers
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
@@ -29,6 +32,17 @@ def xstr_asset_criticality(s):
     else:
         return str(s)
 
+def calculate_db_time():
+    try:
+        c_time = os.path.getctime('./threatdb.db')
+        dt_c = datetime.datetime.fromtimestamp(c_time)
+        today = datetime.datetime.now()
+        delta = today - dt_c
+        days_from_creation = delta.days
+        return days_from_creation
+    except Exception as e:
+        logging.error(e)
+
 
 def ssvc_recommendations(asset,vul_details, public_status, environment, asset_type, asset_criticality):
     query = {}
@@ -53,18 +67,15 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
             exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
         except Exception as e:
             logging.error(e)
-
             #todo handle this
         try:
             description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
         except Exception as e:
             logging.error(e)
-
     query["Exploitation"] = exploit_status
     query["Exposure"] = vector_calculate_exposure(score)
     query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status, score)
     query["Impact"] = vector_calculate_impact(environment, asset_type, asset_criticality)
-
     recommendation = rapticoressvc.svcc_helper.calculate_recommendation(query)
     if recommendation:
         recommendation = list(recommendation.keys())[0]
@@ -225,6 +236,15 @@ def main():
     logging.info('Writing results to excel file')
     helpers.excel_writer(combined_results)
     logging.info('Results written to excel file ssvc_recommendations.xlsx')
+    # clean up database if older than a day. Next run gets the latest from the threat intelligence sources.
+    try:
+        db_days = calculate_db_time()
+        path = Path('./threatdb.db')
+        if path and db_days > 0:
+            os.remove("./threatdb.db")
+            logging.info('threatdb cleaned up')
+    except Exception as e:
+        logging.error(e)
 
 
 if __name__ == "__main__":

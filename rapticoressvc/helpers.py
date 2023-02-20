@@ -1,6 +1,7 @@
 import json
 import logging
 import sqlite3
+from urllib.request import pathname2url
 import requests
 import io
 import zipfile
@@ -109,7 +110,7 @@ def get_nvd_data():
     if check:
         return True
     else:
-        years = ["2023","2022", "2021", "2020", "2019", "2018"]
+        years = ["2023", "2022", "2021", "2020", "2019", "2018"]
         for year in years:
             zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
             logging.debug("Downloading artifact {zip_url}")
@@ -118,7 +119,6 @@ def get_nvd_data():
 
 
 def initialize_nvdb():
-
     check = initialize_nvdb_tbl()
     if check:
         get_nvd_data()
@@ -154,14 +154,20 @@ def get_cisa_kevc():
 
 def initialize():
     try:
-        db_connection = initialize_db()
-        if db_connection:
-            get_cisa_kevc()
-            check = initialize_nvdb()
-            # todo add check whether the db was loaded.
-            return check
-    except Exception as e:
-        logging.exception(e)
+        dburi = 'file:{}?mode=rw'.format(pathname2url('threatdb.db'))
+        check = sqlite3.connect(dburi, uri=True)
+        if check:
+            return True
+    except sqlite3.OperationalError:
+        try:
+            db_connection = initialize_db()
+            if db_connection:
+                get_cisa_kevc()
+                check = initialize_nvdb()
+                # todo add check whether the db was loaded.
+                return check
+        except Exception as e:
+            logging.exception(e)
 
 
 def execute_db(query_data):
