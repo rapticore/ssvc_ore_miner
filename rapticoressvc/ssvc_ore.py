@@ -1,11 +1,9 @@
+import argparse
+import csv
 import json
 import logging
-import argparse
-import datetime
-import csv
 import sys
-import os
-from pathlib import Path
+
 import rapticoressvc.svcc_helper
 from rapticoressvc import helpers
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
@@ -20,11 +18,13 @@ class SetEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
+
 def xstr(s):
     if s == "None":
         return None
     else:
         return str(s)
+
 
 def xstr_asset_criticality(s):
     if s == "None":
@@ -32,19 +32,14 @@ def xstr_asset_criticality(s):
     else:
         return str(s)
 
-def calculate_db_time():
-    try:
-        c_time = os.path.getctime('./threatdb.db')
-        dt_c = datetime.datetime.fromtimestamp(c_time)
-        today = datetime.datetime.now()
-        delta = today - dt_c
-        days_from_creation = delta.days
-        return days_from_creation
-    except Exception as e:
-        logging.error(e)
 
-
-def ssvc_recommendations(asset,vul_details, public_status, environment, asset_type, asset_criticality):
+def ssvc_recommendations(asset, vul_details, public_status, environment, asset_type, asset_criticality):
+    logging.debug('Initializing......')
+    engine_check = helpers.initialize()
+    if not engine_check:
+        logging.error('DB engine could not be Initialized')
+        sys.exit(1)
+    logging.debug('DB engine Initialized')
     query = {}
     description = None
     severity_list = ["critical", "high", "medium", "low"]
@@ -63,15 +58,14 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     else:
         try:
             get_data = helpers.input_cve_get_nvd_data(vul_details)
-            cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
-            exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+            if get_data:
+                cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
+                exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+                description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
         except Exception as e:
-            logging.error(e)
-            #todo handle this
-        try:
-            description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
-        except Exception as e:
-            logging.error(e)
+            logging.exception(e)
+            # todo handle this
+
     query["Exploitation"] = exploit_status
     query["Exposure"] = vector_calculate_exposure(score)
     query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status, score)
@@ -82,7 +76,8 @@ def ssvc_recommendations(asset,vul_details, public_status, environment, asset_ty
     else:
         recommendation = "review"
 
-    results = dict(asset=asset, description=description, cve=vul_details, vulnerability_score=score, cvss_vector=cvss_vector,
+    results = dict(asset=asset, description=description, cve=vul_details, vulnerability_score=score,
+                   cvss_vector=cvss_vector,
                    asset_type=asset_type, environment=environment,
                    public_status=public_status, asset_criticality=asset_criticality, ssvc_rec=recommendation)
 
@@ -113,7 +108,6 @@ def main():
         default=None,
         type=str,
     )
-
 
     parser.add_argument(
         "-p",
@@ -183,13 +177,7 @@ def main():
         log_level = logging.DEBUG
 
     logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
-    logging.debug('Initializing......')
-    engine_check = helpers.initialize()
-    if not engine_check:
-        logging.error('DB engine could not be Initialized')
-        sys.exit(1)
 
-    logging.debug('DB engine Initialized')
     if args.datafile:
         logging.debug('Processing datafile')
         data_file = args.file
@@ -208,7 +196,7 @@ def main():
             if cve_number:
                 ssvc_recommendations(asset_id, cve_number, public_status, environment, asset_type, asset_criticality)
             elif vul_severity:
-                ssvc_recommendations(asset_id,vul_severity, public_status, environment, asset_type, asset_criticality)
+                ssvc_recommendations(asset_id, vul_severity, public_status, environment, asset_type, asset_criticality)
     elif args.single:
         logging.debug('Processing single parameter based entry')
         cve_number = str(args.cve_number)
@@ -236,16 +224,6 @@ def main():
     logging.info('Writing results to excel file')
     helpers.excel_writer(combined_results)
     logging.info('Results written to excel file ssvc_recommendations.xlsx')
-    # clean up database if older than a day. Next run gets the latest from the threat intelligence sources.
-    try:
-        db_days = calculate_db_time()
-        path = Path('./threatdb.db')
-        if path and db_days > 0:
-            os.remove("./threatdb.db")
-            logging.info('threatdb cleaned up')
-    except Exception as e:
-        logging.error(e)
-
 
 if __name__ == "__main__":
     main()

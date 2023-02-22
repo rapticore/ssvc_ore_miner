@@ -98,11 +98,13 @@ def calculate_utility(query):
         try:
             df = lookup('utility', query)
             recommendations = outcome_utility_dist(df).round(decimals=3).to_dict()
-            recommendations = list(recommendations.keys())[0]
+            if recommendations:
+                recommendations = list(recommendations.keys())[0]
+            else:
+                recommendations = "complex"
             return recommendations
         except Exception as e:
-            logging.error(e)
-            return "complex"
+            logging.exception(e)
 
 
 def calculate_recommendation(query):

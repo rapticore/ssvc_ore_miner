@@ -1,12 +1,16 @@
+import datetime
 import json
 import logging
+import os
 import sqlite3
+from pathlib import Path
 from urllib.request import pathname2url
 import requests
 import io
 import zipfile
 from nested_lookup import nested_lookup
 import pandas as pd
+import concurrent.futures
 
 
 def execute_nvd_tbl_count():
@@ -70,7 +74,9 @@ def initialize_nvdb_tbl():
         connection = sqlite3.connect('threatdb.db')
         cursor = connection.cursor()
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS nvd (id varchar (25),cve_vector varchar(50), cve_score varchar(50),data json)")
+            "CREATE TABLE IF NOT EXISTS nvd (id varchar (25) NOT NULL PRIMARY KEY,cve_vector varchar(50), "
+            "cve_score varchar(50),data json)")
+
         return True
     except Exception as e:
         logging.exception(e)
@@ -111,11 +117,16 @@ def get_nvd_data():
         return True
     else:
         years = ["2023", "2022", "2021", "2020", "2019", "2018"]
-        for year in years:
-            zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
-            logging.debug("Downloading artifact {zip_url}")
-            nvd_data = download_extract_zip(zip_url)
-            load_nvd_tbl(nvd_data)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+            futures = [executor.submit(get_and_load_nvd_file, year) for year in years]
+        concurrent.futures.wait(futures)
+
+
+def get_and_load_nvd_file(year):
+    zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
+    logging.debug(f"Downloading artifact {zip_url}")
+    nvd_data = download_extract_zip(zip_url)
+    load_nvd_tbl(nvd_data)
 
 
 def initialize_nvdb():
@@ -129,7 +140,7 @@ def initialize_db():
     try:
         connection = sqlite3.connect('threatdb.db')
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS threatIntel (id varchar (25), data json)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS threatIntel (id varchar (25) NOT NULL PRIMARY KEY, data json)")
         return True
     except Exception as e:
         logging.exception(e)
@@ -152,9 +163,28 @@ def get_cisa_kevc():
     conn.close()
 
 
+def validate_db_time():
+    try:
+        if os.path.exists('./threatdb.db'):
+            c_time = os.path.getctime('./threatdb.db')
+            dt_c = datetime.datetime.fromtimestamp(c_time)
+            today = datetime.datetime.now()
+            delta = today - dt_c
+            days_from_creation = delta.days
+            return days_from_creation > 0
+    except Exception as e:
+        logging.exception(e)
+    return False
+
+
 def initialize():
     try:
         dburi = 'file:{}?mode=rw'.format(pathname2url('threatdb.db'))
+        db_validation = validate_db_time()
+        path = Path('./threatdb.db')
+        if path and db_validation:
+            os.remove("./threatdb.db")
+            logging.info('threatdb cleaned up')
         check = sqlite3.connect(dburi, uri=True)
         if check:
             return True
