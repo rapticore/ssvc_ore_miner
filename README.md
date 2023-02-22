@@ -106,15 +106,16 @@ python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/data_vulnera
    // To upload to pypi
     python -m twine upload dist/*
     ```
+Further details about publishing can be found [here](https://towardsdatascience.com/how-to-publish-a-python-package-to-pypi-7be9dd5d6dcd)
 
 ***Use as a package***
 ```shell
 pip install rapticoressvc
 ```
 ```shell
-from rapticoressvc import start_script
+from rapticoressvc import ssvc_recommendations
 
-start_script(asset_id, cve_number_or_severity, public_status, environment, asset_type, asset_criticality)
+ssvc_recommendations(asset_id, cve_number_or_severity, public_status, environment, asset_type, asset_criticality)
 ```
 Based on the initial work done at
 

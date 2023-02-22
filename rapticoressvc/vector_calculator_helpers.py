@@ -138,13 +138,12 @@ def vector_calculate_utility(exploit, cvss_vector, public_status, score):
         utility = calculate_utility(query)
         return utility
     else:
-        attack_vector, user_interaction = "None", "None"
-        # if score == "critical":
-        #     attack_vector, user_interaction = "None", "None"
-        # elif score == "high":
-        #     attack_vector, user_interaction = "None", "R"
-        # else:
-        #     attack_vector, user_interaction = "L", "R"
+        if score == "critical":
+            attack_vector, user_interaction = "N", "N"
+        elif score == "high":
+            attack_vector, user_interaction = "N", "R"
+        else:
+            attack_vector, user_interaction = "L", "R"
         query = {"exploit": exploit, "attack_vector": attack_vector, "user_interaction": user_interaction,
                  "public_status": public_status}
         utility = calculate_utility(query)
