@@ -117,9 +117,8 @@ def get_nvd_data():
         return True
     else:
         years = ["2023", "2022", "2021", "2020", "2019", "2018"]
-        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-            futures = [executor.submit(get_and_load_nvd_file, year) for year in years]
-        concurrent.futures.wait(futures)
+        for year in years:
+            get_and_load_nvd_file(year)
 
 
 def get_and_load_nvd_file(year):
