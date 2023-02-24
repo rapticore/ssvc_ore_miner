@@ -60,7 +60,8 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
             get_data = helpers.input_cve_get_nvd_data(vul_details)
             if get_data:
                 cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
-                exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
+                if cvss_vector:
+                    exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
                 description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
         except Exception as e:
             logging.exception(e)
