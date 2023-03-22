@@ -56,16 +56,29 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
         else:
             exploit_status = "None"
     else:
-        try:
-            get_data = helpers.input_cve_get_nvd_data(vul_details)
-            if get_data:
-                cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
-                if cvss_vector:
-                    exploit_status = vector_calculate_exploitability(vul_details, cvss_vector)
-                description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
-        except Exception as e:
-            logging.exception(e)
-            # todo handle this
+        if type(vul_details) is not list:
+            vul_details = [vul_details]
+        exploit_data = []
+        for vul_detail in vul_details:
+            try:
+                get_data = helpers.input_cve_get_nvd_data(vul_detail)
+                if get_data:
+                    cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
+                    if cvss_vector:
+                        exploit_status = vector_calculate_exploitability(vul_detail, cvss_vector)
+                    description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
+                    exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
+                                             description=description))
+            except Exception as e:
+                logging.exception(e)
+                # todo handle this
+        if len(exploit_data) > 0:
+            max_exploit = max(exploit_data, key=lambda x: x['score'])
+
+            exploit_status = max_exploit.get('exploit_status')
+            score = max_exploit.get('score')
+            cvss_vector = max_exploit.get('cvss_vector')
+            description = max_exploit.get('description')
 
     query["Exploitation"] = exploit_status
     query["Exposure"] = vector_calculate_exposure(score)
@@ -105,7 +118,7 @@ def main():
     parser.add_argument(
         "-cn",
         "--cve_number",
-        help="CVE number for the vulnerability",
+        help="CVE numbers for the vulnerability separated by '|'",
         default=None,
         type=str,
     )
@@ -184,18 +197,23 @@ def main():
         data_file = args.file
         reader = csv.DictReader(data_file)
         for row in reader:
-            asset_id = str(row['asset_id']).rstrip()
-            cve_number = str(row['cve_number']).rstrip()
+            asset_id = str(row['asset_id']).strip()
+            cve_number = str(row['cve_number']).strip()
             cve_number = xstr(cve_number)
-            vul_severity = str(row['vul_severity']).rstrip()
-            environment = str(row['environment']).rstrip()
-            public_status = str(row['public_status']).rstrip()
-            asset_type = str(row['assetType']).rstrip()
-            asset_criticality = str(row['assetCriticality']).rstrip()
+            cve_list = None
+            if cve_number:
+                cve_list = cve_number.split('|')
+                cve_list = [cve.strip() for cve in cve_list]
+
+            vul_severity = str(row['vul_severity']).strip()
+            environment = str(row['environment']).strip()
+            public_status = str(row['public_status']).strip()
+            asset_type = str(row['assetType']).strip()
+            asset_criticality = str(row['assetCriticality']).strip()
             asset_criticality = xstr_asset_criticality(asset_criticality)
 
-            if cve_number:
-                ssvc_recommendations(asset_id, cve_number, public_status, environment, asset_type, asset_criticality)
+            if cve_list:
+                ssvc_recommendations(asset_id, cve_list, public_status, environment, asset_type, asset_criticality)
             elif vul_severity:
                 ssvc_recommendations(asset_id, vul_severity, public_status, environment, asset_type, asset_criticality)
     elif args.single:

@@ -68,7 +68,7 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 
 `-id, --asset_id Asset Identifier(optional)`
 
-`-cn CVE_NUMBER, --cve_number CVE_NUMBER CVE number for the vulnerability`
+`-cn CVE_NUMBERs, --cve_number CVE_NUMBERs CVE numbers for the vulnerability separated by '|'`
 
 `-p {public,public_restricted,private,None} --public_status {public,public_restricted,private,None} Public Status, allowed values: public, public_restricted, private`
 
@@ -115,7 +115,7 @@ pip install rapticoressvc
 ```shell
 from rapticoressvc import ssvc_recommendations
 
-ssvc_recommendations(asset_id, cve_number_or_severity, public_status, environment, asset_type, asset_criticality)
+ssvc_recommendations(asset_id, cve_numbers_array_or_severity, public_status, environment, asset_type, asset_criticality)
 ```
 Based on the initial work done at
 
