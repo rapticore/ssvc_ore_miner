@@ -6,39 +6,13 @@ import sqlite3
 from pathlib import Path
 from urllib.request import pathname2url
 import requests
-import io
-import zipfile
-from nested_lookup import nested_lookup
 import pandas as pd
-
-
-def execute_nvd_tbl_count():
-    db_connection, conn = get_db_conn()[0], get_db_conn()[1]
-    data = db_connection.execute(
-        "SELECT COUNT(1) FROM nvd")
-    data = data.fetchone()
-    if data:
-        return data[0]
-    else:
-        return None
 
 
 def execute_threat_intel_tbl_count():
     db_connection, conn = get_db_conn()[0], get_db_conn()[1]
     data = db_connection.execute(
         "SELECT COUNT(1) FROM threatIntel")
-    data = data.fetchall()
-    if data:
-        return data[0]
-    else:
-        return None
-
-
-def execute_nvd_tbl_query(query_data):
-    db_connection, conn = get_db_conn()[0], get_db_conn()[1]
-    data = db_connection.execute(
-        "SELECT * FROM nvd WHERE id=?", [query_data]
-    )
     data = data.fetchall()
     if data:
         return data[0]
@@ -57,81 +31,6 @@ def get_db_conn():
     except Exception as e:
         logging.exception(e)
     return None
-
-
-def download_extract_zip(url):
-    response = requests.get(url)
-    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-        for zip_info in zip_file.infolist():
-            with zip_file.open(zip_info) as the_file:
-                file = json.loads(the_file.read())
-                return file
-
-
-def initialize_nvdb_tbl():
-    try:
-        connection = sqlite3.connect('threatdb.db')
-        cursor = connection.cursor()
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS nvd (id varchar (25) NOT NULL PRIMARY KEY,cve_vector varchar(50), "
-            "cve_score varchar(50),data json)")
-
-        return True
-    except Exception as e:
-        logging.exception(e)
-    return None
-
-
-def load_nvd_tbl(nvd_data):
-    logging.debug("Loading NVD Table")
-    db_connection = None
-    conn = None
-    db = get_db_conn()
-    if db:
-        db_connection, conn = db[0], db[1]
-    for data in nvd_data["CVE_Items"]:
-        cve_id = data["cve"]['CVE_data_meta']['ID']
-        impact = data['impact']
-        if nested_lookup('vectorString', impact):
-            cve_vector = nested_lookup('vectorString', impact)[0]
-        else:
-            cve_vector = None
-        if nested_lookup('baseScore', impact):
-            cve_score = nested_lookup('baseScore', impact)[0]
-        else:
-            cve_score = None
-        db_connection.execute("insert into nvd values (?, ?, ?, ?)", [cve_id, cve_vector, cve_score, json.dumps(data)])
-    conn.commit()
-    conn.close()
-
-
-def get_nvd_data():
-    """
-    check first if the data is already present.
-    Add a years in the years array to grab additional data from NVD for that year. Reduced
-
-    """
-    check = execute_nvd_tbl_count()
-    if check:
-        return True
-    else:
-        years = ["2023", "2022", "2021", "2020", "2019", "2018"]
-        for year in years:
-            get_and_load_nvd_file(year)
-
-
-def get_and_load_nvd_file(year):
-    zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
-    logging.debug(f"Downloading artifact {zip_url}")
-    nvd_data = download_extract_zip(zip_url)
-    load_nvd_tbl(nvd_data)
-
-
-def initialize_nvdb():
-    check = initialize_nvdb_tbl()
-    if check:
-        get_nvd_data()
-        return True
 
 
 def initialize_db():
@@ -191,9 +90,8 @@ def initialize():
             db_connection = initialize_db()
             if db_connection:
                 get_cisa_kevc()
-                check = initialize_nvdb()
                 # todo add check whether the db was loaded.
-                return check
+                return True
         except Exception as e:
             logging.exception(e)
 
@@ -238,11 +136,6 @@ def select_all_tasks(conn):
     cur.execute("SELECT * FROM threatIntel")
     rows = cur.fetchall()
     return rows
-
-
-def input_cve_get_nvd_data(cve_number):
-    nvd_data = execute_nvd_tbl_query(cve_number)
-    return nvd_data
 
 
 def excel_writer(data):

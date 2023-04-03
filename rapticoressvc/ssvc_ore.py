@@ -6,6 +6,7 @@ import sys
 
 import rapticoressvc.svcc_helper
 from rapticoressvc import helpers
+from rapticoressvc.nvd_data_helper import get_nvd_data
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
     vector_calculate_exploitability, vector_calculate_impact
 
@@ -59,16 +60,19 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
         if type(vul_details) is not list:
             vul_details = [vul_details]
         exploit_data = []
+        cve_nvd_map = get_nvd_data(vul_details)
         for vul_detail in vul_details:
             try:
-                get_data = helpers.input_cve_get_nvd_data(vul_detail)
-                if get_data:
-                    cvss_vector, score, nvd_data_local = get_data[1], get_data[2], json.loads(get_data[3])
-                    if cvss_vector:
-                        exploit_status = vector_calculate_exploitability(vul_detail, cvss_vector)
-                    description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
-                    exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
-                                             description=description))
+                nvd_data = cve_nvd_map.get(vul_detail)
+                if not nvd_data:
+                    continue
+                cvss_vector, score = nvd_data.get("cve_vector"), nvd_data.get("cve_score")
+                nvd_data_local = json.loads(nvd_data.get("nvd_data"))
+                if cvss_vector:
+                    exploit_status = vector_calculate_exploitability(vul_detail, cvss_vector)
+                description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
+                exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
+                                         description=description))
             except Exception as e:
                 logging.exception(e)
                 # todo handle this
@@ -243,6 +247,7 @@ def main():
     logging.info('Writing results to excel file')
     helpers.excel_writer(combined_results)
     logging.info('Results written to excel file ssvc_recommendations.xlsx')
+
 
 if __name__ == "__main__":
     main()
