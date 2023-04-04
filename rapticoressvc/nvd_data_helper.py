@@ -1,8 +1,9 @@
 import io
 import json
 import logging
-import sys
+import os
 import zipfile
+from datetime import datetime
 
 import boto3
 import requests
@@ -59,24 +60,6 @@ def download_modification_timestamps(s3_client, bucket_name, timestamps_file_key
     return modification_timestamps
 
 
-def upload_nvd_record(s3_client, bucket_name, cve_key, nvd_data):
-    upload_status = False
-    try:
-        upload_status = upload_data_to_s3(s3_client, bucket_name, cve_key, nvd_data)
-    except Exception as e:
-        logging.exception(e)
-    return upload_status
-
-
-def download_nvd_record(s3_client, bucket_name, cve_key):
-    nvd_record = None
-    try:
-        nvd_record = download_data_from_s3(s3_client, bucket_name, cve_key)
-    except Exception as e:
-        logging.exception(e)
-    return nvd_record
-
-
 def download_extract_zip(url):
     response = requests.get(url)
     with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
@@ -112,7 +95,7 @@ def preprocess_nvd_data_for_upload(nvd_file):
     return cve_nvd_data_map
 
 
-def upload_nvd_records_in_parallel(cve_nvd_data, args):
+def upload_nvd_record(cve_nvd_data, args):
     upload_status = False
     try:
         s3_client = args.get("s3_client")
@@ -121,7 +104,7 @@ def upload_nvd_records_in_parallel(cve_nvd_data, args):
         data = cve_nvd_data[cve]
 
         cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
-        upload_status = upload_nvd_record(s3_client, bucket_name, cve_key, data)
+        upload_status = upload_data_to_s3(s3_client, bucket_name, cve_key, data)
     except Exception as e:
         logging.exception(e)
     return upload_status
@@ -129,25 +112,33 @@ def upload_nvd_records_in_parallel(cve_nvd_data, args):
 
 def upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map, modification_timestamps, max_workers=32):
     modified_cve_list = []
+    modified_time_format = '%Y-%m-%dT%H:%MZ'
+
     for cve, data in cve_nvd_data_map.items():
         try:
-            last_modified_date = data.pop("last_modified_date", "")
-            if last_modified_date and last_modified_date == modification_timestamps.get(cve, ""):
+            modified_date_new = data.pop("last_modified_date")
+            modified_date_old = modification_timestamps.get(cve)
+            if modified_date_new and modified_date_old and datetime.strptime(modified_date_new, modified_time_format) \
+                    <= datetime.strptime(modified_date_old, modified_time_format):
                 continue
-            modification_timestamps[cve] = last_modified_date
+            modification_timestamps[cve] = modified_date_new
             modified_cve_list.append({cve: data})
         except Exception as e:
             logging.exception(e)
 
     args = dict(s3_client=s3_client, bucket_name=bucket_name)
-    upload_statuses = run_parallel(upload_nvd_records_in_parallel, modified_cve_list, args, max_workers) or []
+    progress_description = 'NVD data upload progress'
+    upload_statuses = run_parallel(upload_nvd_record, modified_cve_list, args, max_workers, progress_description) or []
 
     return upload_statuses
 
 
 def update_nvd_data():
-    logging.debug('Updating NVD data...')
-    bucket_name = "ssvc-ore-miner"
+    logging.info('Updating NVD data...')
+    bucket_name = os.environ.get("BUCKET_NAME")
+    if not bucket_name:
+        logging.error(f'S3 bucket name is not configured in environment')
+        return
     timestamps_file_key = f"{CVE_NVD_DATA_DIRECTORY}/modification_timestamps"
     nvd_data_years = ["2023", "2022", "2021", "2020", "2019", "2018"]
 
@@ -163,21 +154,21 @@ def update_nvd_data():
             logging.debug(f'Uploading NVD data for year: {year}...')
             upload_statuses = upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map,
                                                     modification_timestamps)
-            logging.debug(f'Uploaded {len(upload_statuses)} new NVD data records for year: {year}, '
-                          f'Succeeded: {upload_statuses.count(True)}, Failed: {upload_statuses.count(False)}')
+            logging.info(f'Uploaded {len(upload_statuses)} new NVD data records for year: {year}, '
+                         f'Succeeded: {upload_statuses.count(True)}, Failed: {upload_statuses.count(False)}')
         except Exception as e:
             logging.exception(e)
         upload_modification_timestamps(s3_client, bucket_name, timestamps_file_key, modification_timestamps)
 
 
-def get_nvd_data_in_parallel(cve, args):
+def download_nvd_record(cve, args):
     logging.debug(f'Getting NVD data for CVE: {cve}')
     s3_client = args.get("s3_client")
     bucket_name = args.get("bucket_name")
     cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
     nvd_data = {cve: None}
     try:
-        nvd_record = download_nvd_record(s3_client, bucket_name, cve_key)
+        nvd_record = download_data_from_s3(s3_client, bucket_name, cve_key)
         nvd_data = {cve: nvd_record}
     except Exception as e:
         logging.exception(e)
@@ -185,39 +176,18 @@ def get_nvd_data_in_parallel(cve, args):
 
 
 def get_nvd_data(cves, max_workers=10):
-    bucket_name = "ssvc-ore-miner"
     cve_nvd_map = {}
+    bucket_name = os.environ.get("BUCKET_NAME")
+    if not bucket_name:
+        logging.error(f'S3 bucket name is not configured in environment')
+        return cve_nvd_map
     try:
         cves = cves if type(cves) is list else [cves]
         s3_client = get_s3_client()
         args = dict(s3_client=s3_client, bucket_name=bucket_name)
-        cve_nvd_list = run_parallel(get_nvd_data_in_parallel, cves, args, max_workers)
+        progress_description = 'NVD data download progress'
+        cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers, progress_description)
         cve_nvd_map = dict((key, cve_nvd_dict[key]) for cve_nvd_dict in cve_nvd_list for key in cve_nvd_dict)
     except Exception as e:
         logging.exception(e)
     return cve_nvd_map
-
-
-def main():
-    # update_nvd_data()
-    cves = [
-        "CVE-2023-1390",
-        "CVE-2023-1391",
-        "CVE-2023-1392",
-        "CVE-2023-1393",
-        "CVE-2023-1394",
-        "CVE-2023-1395",
-        "CVE-2023-1396",
-        "CVE-2023-1397",
-        "CVE-2023-1398",
-        "CVE-2023-1399",
-    ]
-    data = get_nvd_data(cves)
-    pass
-
-
-if __name__ == "__main__":
-    log_level = logging.DEBUG
-    log_format = "%(message)s"
-    logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
-    main()
