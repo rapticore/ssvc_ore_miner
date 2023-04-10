@@ -2,11 +2,13 @@ import argparse
 import csv
 import json
 import logging
+import os
 import sys
 
 import rapticoressvc.svcc_helper
 from rapticoressvc import helpers
-from rapticoressvc.nvd_data_helper import get_nvd_data
+from rapticoressvc.nvd_data_helper import get_nvd_data, update_nvd_data
+from rapticoressvc.svcc_constants import STORAGE_LOCAL, BUCKET_NAME
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
     vector_calculate_exploitability, vector_calculate_impact
 
@@ -104,6 +106,20 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     return results
 
 
+def set_environment_variables(args):
+    try:
+        if args.bucket_name:
+            os.environ['BUCKET_NAME'] = args.bucket_name
+        if args.storage_type:
+            os.environ['STORAGE_TYPE'] = str(args.storage_type).lower()
+        if args.aws_profile:
+            os.environ['AWS_PROFILE'] = args.aws_profile
+        if args.aws_region:
+            os.environ['AWS_REGION'] = args.aws_region
+    except Exception as e:
+        logging.exception(e)
+
+
 def main():
     logging.getLogger()
     parser = argparse.ArgumentParser()
@@ -179,6 +195,39 @@ def main():
     )
 
     parser.add_argument(
+        "-bucket",
+        "--bucket_name",
+        help="Name of the S3 bucket or files directory",
+        default=BUCKET_NAME,
+        type=str,
+    )
+
+    parser.add_argument(
+        "-storage",
+        "--storage_type",
+        help="Storage medium for NVD data. Choices: s3, local",
+        choices=["s3", "local"],
+        default=STORAGE_LOCAL,
+        type=str,
+    )
+
+    parser.add_argument(
+        "-profile",
+        "--aws_profile",
+        help="Currently logged-in aws profile name for S3 storage",
+        default="None",
+        type=str,
+    )
+
+    parser.add_argument(
+        "-region",
+        "--aws_region",
+        help="Currently logged-in aws profile region",
+        default="us-west-2",
+        type=str,
+    )
+
+    parser.add_argument(
         "-v",
         "--verbose",
         help="Increase output verbosity",
@@ -190,11 +239,13 @@ def main():
     log_format = "%(message)s"
 
     args = parser.parse_args()
+    set_environment_variables(args)
 
     if args.verbose:
         log_level = logging.DEBUG
-
     logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
+
+    update_nvd_data()
 
     if args.datafile:
         logging.debug('Processing datafile')

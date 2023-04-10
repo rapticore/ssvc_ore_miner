@@ -5,56 +5,43 @@ import os
 import zipfile
 from datetime import datetime
 
-import boto3
 import requests
 from nested_lookup import nested_lookup
 
 from rapticoressvc.multi_threading_helper import run_parallel
+from rapticoressvc.storage_helpers.files_helper import read_from_json_file, save_to_json_file
+from rapticoressvc.storage_helpers.s3_helper import get_s3_client, upload_data_to_s3, download_data_from_s3
+from rapticoressvc.svcc_constants import STORAGE_S3, STORAGE_LOCAL
 
 CVE_NVD_DATA_DIRECTORY = "cve_nvd_data"
 
 
-def get_s3_client():
-    s3_client = boto3.client("s3")
-    return s3_client
-
-
-def upload_data_to_s3(s3_client, bucket_name, object_key, object_data):
-    upload_status = False
+def update_modification_timestamps(bucket_name, timestamps_file_name, modification_timestamps, storage_type):
     try:
-        put_object_response = s3_client.put_object(Body=json.dumps(object_data), Bucket=bucket_name, Key=object_key)
-        status_code = put_object_response.get("ResponseMetadata", {}).get("HTTPStatusCode")
-        upload_status = status_code and status_code == 200
-    except Exception as e:
-        logging.exception(e)
-    return upload_status
-
-
-def download_data_from_s3(s3_client, bucket_name, object_key):
-    data = None
-    try:
-        get_object_response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
-        data_bytes = get_object_response and get_object_response.get("Body").read()
-        data = json.loads(data_bytes)
-    except s3_client.exceptions.NoSuchKey:
-        logging.warning(f"S3 bucket {bucket_name} does not contain object {object_key}")
-    except Exception as e:
-        logging.exception(e)
-    return data
-
-
-def upload_modification_timestamps(s3_client, bucket_name, timestamps_file_key, modification_timestamps):
-    try:
-        upload_status = upload_data_to_s3(s3_client, bucket_name, timestamps_file_key, modification_timestamps)
+        upload_status = False
+        if storage_type == STORAGE_S3:
+            s3_client = get_s3_client()
+            timestamps_file_key = f"{CVE_NVD_DATA_DIRECTORY}/{timestamps_file_name}"
+            upload_status = upload_data_to_s3(s3_client, bucket_name, timestamps_file_key, modification_timestamps)
+        elif storage_type == STORAGE_LOCAL:
+            file_destination = [bucket_name, CVE_NVD_DATA_DIRECTORY, f'{timestamps_file_name}.json']
+            upload_status = save_to_json_file(modification_timestamps, file_destination)
         logging.debug(f"Modification timestamps upload status: {upload_status}")
     except Exception as e:
         logging.exception(e)
 
 
-def download_modification_timestamps(s3_client, bucket_name, timestamps_file_key):
+def get_modification_timestamps(bucket_name, timestamps_file_name, storage_type):
     modification_timestamps = {}
     try:
-        modification_timestamps = download_data_from_s3(s3_client, bucket_name, timestamps_file_key) or {}
+        if storage_type == STORAGE_S3:
+            s3_client = get_s3_client()
+            timestamps_file_key = f"{CVE_NVD_DATA_DIRECTORY}/{timestamps_file_name}"
+            modification_timestamps = download_data_from_s3(s3_client, bucket_name, timestamps_file_key)
+        elif storage_type == STORAGE_LOCAL:
+            file_destination = [bucket_name, CVE_NVD_DATA_DIRECTORY, f'{timestamps_file_name}.json']
+            modification_timestamps = read_from_json_file(file_destination)
+        modification_timestamps = modification_timestamps or {}
     except Exception as e:
         logging.exception(e)
     return modification_timestamps
@@ -95,23 +82,28 @@ def preprocess_nvd_data_for_upload(nvd_file):
     return cve_nvd_data_map
 
 
-def upload_nvd_record(cve_nvd_data, args):
+def update_nvd_record(cve_nvd_data, args):
     upload_status = False
+    bucket_name = args.get("bucket_name")
+    storage_type = args.get("storage_type", "")
     try:
-        s3_client = args.get("s3_client")
-        bucket_name = args.get("bucket_name")
         cve = list(cve_nvd_data.keys())[0]
         data = cve_nvd_data[cve]
-
-        cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
-        upload_status = upload_data_to_s3(s3_client, bucket_name, cve_key, data)
+        if storage_type == STORAGE_S3:
+            s3_client = args.get("s3_client")
+            cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
+            upload_status = upload_data_to_s3(s3_client, bucket_name, cve_key, data)
+        elif storage_type == STORAGE_LOCAL:
+            file_destination = [bucket_name, CVE_NVD_DATA_DIRECTORY, f'{cve}.json']
+            upload_status = save_to_json_file(data, file_destination)
     except Exception as e:
         logging.exception(e)
     return upload_status
 
 
-def upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map, modification_timestamps, max_workers=32):
+def upload_nvd_data_to_s3(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=32):
     modified_cve_list = []
+    upload_statuses = []
     modified_time_format = '%Y-%m-%dT%H:%MZ'
 
     for cve, data in cve_nvd_data_map.items():
@@ -126,9 +118,11 @@ def upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map, modification
         except Exception as e:
             logging.exception(e)
 
-    args = dict(s3_client=s3_client, bucket_name=bucket_name)
+    s3_client = storage_type == STORAGE_S3 and get_s3_client()
+    args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
     progress_description = 'NVD data upload progress'
-    upload_statuses = run_parallel(upload_nvd_record, modified_cve_list, args, max_workers, progress_description) or []
+    if modified_cve_list:
+        upload_statuses = run_parallel(update_nvd_record, modified_cve_list, args, max_workers, progress_description)
 
     return upload_statuses
 
@@ -136,14 +130,14 @@ def upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map, modification
 def update_nvd_data():
     logging.info('Updating NVD data...')
     bucket_name = os.environ.get("BUCKET_NAME")
-    if not bucket_name:
-        logging.error(f'S3 bucket name is not configured in environment')
+    storage_type = os.environ.get("STORAGE_TYPE", "")
+    if not bucket_name or not storage_type:
+        logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return
-    timestamps_file_key = f"{CVE_NVD_DATA_DIRECTORY}/modification_timestamps"
+    timestamps_file_name = f"modification_timestamps"
     nvd_data_years = ["2023", "2022", "2021", "2020", "2019", "2018"]
 
-    s3_client = get_s3_client()
-    modification_timestamps = download_modification_timestamps(s3_client, bucket_name, timestamps_file_key)
+    modification_timestamps = get_modification_timestamps(bucket_name, timestamps_file_name, storage_type)
 
     for year in nvd_data_years:
         logging.debug(f'Processing NVD data for year: {year}...')
@@ -152,23 +146,29 @@ def update_nvd_data():
             cve_nvd_data_map = preprocess_nvd_data_for_upload(nvd_file)
 
             logging.debug(f'Uploading NVD data for year: {year}...')
-            upload_statuses = upload_nvd_data_to_s3(s3_client, bucket_name, cve_nvd_data_map,
-                                                    modification_timestamps)
+            upload_statuses = upload_nvd_data_to_s3(
+                bucket_name, cve_nvd_data_map, modification_timestamps, storage_type)
             logging.info(f'Uploaded {len(upload_statuses)} new NVD data records for year: {year}, '
                          f'Succeeded: {upload_statuses.count(True)}, Failed: {upload_statuses.count(False)}')
         except Exception as e:
             logging.exception(e)
-        upload_modification_timestamps(s3_client, bucket_name, timestamps_file_key, modification_timestamps)
+        update_modification_timestamps(bucket_name, timestamps_file_name, modification_timestamps, storage_type)
 
 
 def download_nvd_record(cve, args):
     logging.debug(f'Getting NVD data for CVE: {cve}')
-    s3_client = args.get("s3_client")
     bucket_name = args.get("bucket_name")
-    cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
+    storage_type = args.get("storage_type", "")
     nvd_data = {cve: None}
     try:
-        nvd_record = download_data_from_s3(s3_client, bucket_name, cve_key)
+        nvd_record = None
+        if storage_type == STORAGE_S3:
+            s3_client = args.get("s3_client")
+            cve_key = f"{CVE_NVD_DATA_DIRECTORY}/{cve}"
+            nvd_record = download_data_from_s3(s3_client, bucket_name, cve_key)
+        elif storage_type == STORAGE_LOCAL:
+            file_destination = [bucket_name, CVE_NVD_DATA_DIRECTORY, f'{cve}.json']
+            nvd_record = read_from_json_file(file_destination)
         nvd_data = {cve: nvd_record}
     except Exception as e:
         logging.exception(e)
@@ -178,13 +178,15 @@ def download_nvd_record(cve, args):
 def get_nvd_data(cves, max_workers=10):
     cve_nvd_map = {}
     bucket_name = os.environ.get("BUCKET_NAME")
-    if not bucket_name:
-        logging.error(f'S3 bucket name is not configured in environment')
+    storage_type = os.environ.get("STORAGE_TYPE", "")
+    allowed_storage_medium = [STORAGE_S3, STORAGE_LOCAL]
+    if not bucket_name or not storage_type or storage_type not in allowed_storage_medium:
+        logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return cve_nvd_map
     try:
         cves = cves if type(cves) is list else [cves]
-        s3_client = get_s3_client()
-        args = dict(s3_client=s3_client, bucket_name=bucket_name)
+        s3_client = storage_type == STORAGE_S3 and get_s3_client()
+        args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
         progress_description = 'NVD data download progress'
         cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers, progress_description)
         cve_nvd_map = dict((key, cve_nvd_dict[key]) for cve_nvd_dict in cve_nvd_list for key in cve_nvd_dict)
