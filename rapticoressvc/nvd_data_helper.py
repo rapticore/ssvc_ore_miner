@@ -47,20 +47,26 @@ def get_modification_timestamps(bucket_name, timestamps_file_name, storage_type)
     return modification_timestamps
 
 
-def download_extract_zip(url):
-    response = requests.get(url)
+def download_extract_zip(url, last_modified_old=None):
+    STATUS_NOT_MODIFIED = 304
+    headers = {"If-Modified-Since": last_modified_old}
+    response = last_modified_old and requests.get(url, headers=headers) or requests.get(url)
+    if response.status_code == STATUS_NOT_MODIFIED:
+        logging.debug(f"No change in artifact {url} since last update")
+        return None, None
+
+    last_modified = response.headers.get("last-modified")
     with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
         for zip_info in zip_file.infolist():
             with zip_file.open(zip_info) as the_file:
                 file = json.loads(the_file.read())
-                return file
+                return file, last_modified
 
 
-def get_nvd_file(year):
-    zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
+def get_nvd_file(zip_url, last_modified_old):
     logging.debug(f"Downloading artifact {zip_url}")
-    nvd_data = download_extract_zip(zip_url)
-    return nvd_data
+    nvd_data, last_modified = download_extract_zip(zip_url, last_modified_old)
+    return nvd_data, last_modified
 
 
 def preprocess_nvd_data_for_upload(nvd_file):
@@ -101,7 +107,7 @@ def update_nvd_record(cve_nvd_data, args):
     return upload_status
 
 
-def upload_nvd_data_to_s3(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=32):
+def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=32):
     modified_cve_list = []
     upload_statuses = []
     modified_time_format = '%Y-%m-%dT%H:%MZ'
@@ -142,14 +148,20 @@ def update_nvd_data():
     for year in nvd_data_years:
         logging.debug(f'Processing NVD data for year: {year}...')
         try:
-            nvd_file = get_nvd_file(year)
+            zip_url = f'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{year}.json.zip'
+            nvd_file, last_modified = get_nvd_file(zip_url, modification_timestamps.get(zip_url))
+            if not nvd_file and not last_modified:
+                continue
+            modification_timestamps[zip_url] = last_modified
+
             cve_nvd_data_map = preprocess_nvd_data_for_upload(nvd_file)
 
             logging.debug(f'Uploading NVD data for year: {year}...')
-            upload_statuses = upload_nvd_data_to_s3(
+            upload_statuses = update_nvd_records(
                 bucket_name, cve_nvd_data_map, modification_timestamps, storage_type)
             logging.info(f'Uploaded {len(upload_statuses)} new NVD data records for year: {year}, '
                          f'Succeeded: {upload_statuses.count(True)}, Failed: {upload_statuses.count(False)}')
+            upload_statuses.count(False) and modification_timestamps.update({zip_url: None})
         except Exception as e:
             logging.exception(e)
         update_modification_timestamps(bucket_name, timestamps_file_name, modification_timestamps, storage_type)
