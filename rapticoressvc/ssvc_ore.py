@@ -5,11 +5,11 @@ import logging
 import os
 import sys
 
-import rapticoressvc.svcc_helper
-from rapticoressvc import helpers
-from rapticoressvc.nvd_data_helper import get_nvd_data, update_nvd_data
-from rapticoressvc.svcc_constants import STORAGE_LOCAL, BUCKET_NAME
-from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
+from . import svcc_helper
+from . import helpers
+from .nvd_data_helper import get_nvd_data, update_nvd_data
+from .svcc_constants import STORAGE_LOCAL, BUCKET_NAME
+from .vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
     vector_calculate_exploitability, vector_calculate_impact
 
 combined_results = []
@@ -90,7 +90,7 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     query["Exposure"] = vector_calculate_exposure(score)
     query["Utility"] = vector_calculate_utility(exploit_status, cvss_vector, public_status, score)
     query["Impact"] = vector_calculate_impact(environment, asset_type, asset_criticality)
-    recommendation = rapticoressvc.svcc_helper.calculate_recommendation(query)
+    recommendation = svcc_helper.calculate_recommendation(query)
     if recommendation:
         recommendation = list(recommendation.keys())[0]
     else:
