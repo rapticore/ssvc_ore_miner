@@ -22,7 +22,7 @@ def execute_threat_intel_tbl_count():
 
 def get_db_conn():
     try:
-        connection = sqlite3.connect('threatdb.db')
+        connection = sqlite3.connect('/tmp/threatdb.db')
         cursor = connection.cursor()
         if connection and cursor:
             return cursor, connection
@@ -35,7 +35,7 @@ def get_db_conn():
 
 def initialize_db():
     try:
-        connection = sqlite3.connect('threatdb.db')
+        connection = sqlite3.connect('/tmp/threatdb.db')
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS threatIntel (id varchar (25) NOT NULL PRIMARY KEY, data json)")
         return True
@@ -62,8 +62,8 @@ def get_cisa_kevc():
 
 def validate_db_time():
     try:
-        if os.path.exists('./threatdb.db'):
-            c_time = os.path.getctime('./threatdb.db')
+        if os.path.exists('/tmp/threatdb.db'):
+            c_time = os.path.getctime('/tmp/threatdb.db')
             dt_c = datetime.datetime.fromtimestamp(c_time)
             today = datetime.datetime.now()
             delta = today - dt_c
@@ -76,11 +76,11 @@ def validate_db_time():
 
 def initialize():
     try:
-        dburi = 'file:{}?mode=rw'.format(pathname2url('threatdb.db'))
+        dburi = 'file:{}?mode=rw'.format(pathname2url('/tmp/threatdb.db'))
         db_validation = validate_db_time()
-        path = Path('./threatdb.db')
+        path = Path('/tmp/threatdb.db')
         if path and db_validation:
-            os.remove("./threatdb.db")
+            os.remove("/tmp/threatdb.db")
             logging.info('threatdb cleaned up')
         check = sqlite3.connect(dburi, uri=True)
         if check:
