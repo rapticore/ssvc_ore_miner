@@ -3,7 +3,7 @@ import logging
 from concurrent.futures import as_completed
 
 
-def run_parallel(function, array, args: dict = None, max_workers=8, progress_description=None):
+def run_parallel(function, array, args: dict = None, max_workers=8):
     return_values = []
     try:
         args = args or {}

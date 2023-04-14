@@ -127,9 +127,9 @@ def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, s
 
     s3_client = storage_type == STORAGE_S3 and get_s3_client()
     args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
-    progress_description = 'NVD data upload progress'
     if modified_cve_list:
-        upload_statuses = run_parallel(update_nvd_record, modified_cve_list, args, max_workers, progress_description)
+        logging.info(f'Uploading {len(modified_cve_list)} new NVD data records...')
+        upload_statuses = run_parallel(update_nvd_record, modified_cve_list, args, max_workers)
 
     return upload_statuses
 
@@ -200,8 +200,7 @@ def get_nvd_data(cves, max_workers=10):
         cves = cves if type(cves) is list else [cves]
         s3_client = storage_type == STORAGE_S3 and get_s3_client()
         args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
-        progress_description = 'NVD data download progress'
-        cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers, progress_description)
+        cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers)
         cve_nvd_map = dict((key, cve_nvd_dict[key]) for cve_nvd_dict in cve_nvd_list for key in cve_nvd_dict)
     except Exception as e:
         logging.exception(e)

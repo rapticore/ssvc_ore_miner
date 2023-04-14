@@ -7,6 +7,7 @@ import sys
 
 from rapticoressvc import svcc_helper
 from rapticoressvc import helpers
+from rapticoressvc.kevc_helper import update_kevc_data
 from rapticoressvc.nvd_data_helper import get_nvd_data, update_nvd_data
 from rapticoressvc.svcc_constants import STORAGE_LOCAL, BUCKET_NAME
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
@@ -37,12 +38,7 @@ def xstr_asset_criticality(s):
 
 
 def ssvc_recommendations(asset, vul_details, public_status, environment, asset_type, asset_criticality):
-    logging.debug('Initializing......')
-    engine_check = helpers.initialize()
-    if not engine_check:
-        logging.error('DB engine could not be Initialized')
-        sys.exit(1)
-    logging.debug('DB engine Initialized')
+    logging.debug('Generating SSVC recommendation...')
     query = {}
     description = None
     severity_list = ["critical", "high", "medium", "low"]
@@ -246,6 +242,7 @@ def main():
     logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
 
     update_nvd_data()
+    update_kevc_data()
 
     if args.datafile:
         logging.debug('Processing datafile')
