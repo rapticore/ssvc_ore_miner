@@ -8,14 +8,11 @@ from datetime import datetime
 import requests
 from nested_lookup import nested_lookup
 
-from .multi_threading_helper import run_parallel
-from .storage_helpers.files_helper import read_from_json_file
-from .storage_helpers.files_helper import save_to_json_file
-from .storage_helpers.s3_helper import download_data_from_s3
-from .storage_helpers.s3_helper import get_s3_client
-from .storage_helpers.s3_helper import upload_data_to_s3
-from .svcc_constants import STORAGE_LOCAL
-from .svcc_constants import STORAGE_S3
+from rapticoressvc.multi_threading_helper import run_parallel
+from rapticoressvc.storage_helpers.files_helper import read_from_json_file, save_to_json_file
+from rapticoressvc.storage_helpers.s3_helper import get_s3_client, upload_data_to_s3, download_data_from_s3
+from rapticoressvc.svcc_constants import STORAGE_S3, STORAGE_LOCAL
+
 
 CVE_NVD_DATA_DIRECTORY = "cve_nvd_data"
 

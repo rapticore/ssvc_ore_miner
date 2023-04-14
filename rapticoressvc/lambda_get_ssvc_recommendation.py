@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from aws_lambda_powertools.event_handler import api_gateway
 
-from . import ssvc_recommendations
+from rapticoressvc import ssvc_recommendations
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
