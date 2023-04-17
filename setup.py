@@ -2,7 +2,8 @@
 
 # Learn more: https://github.com/kennethreitz/setup.py
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 REQUIRED = []
 
@@ -40,4 +41,3 @@ setup(
             "rapticoressvc": ["ssvc_impact_options.csv", "priority-options_v2.csv", "ssvc_utility_options.csv", "data_vulnerability.csv"],
         },
 )
-

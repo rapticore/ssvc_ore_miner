@@ -1,4 +1,5 @@
 import logging
+
 from .nvd_data_helper import update_nvd_data
 
 logger = logging.getLogger()

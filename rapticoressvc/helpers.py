@@ -5,12 +5,13 @@ import os
 import sqlite3
 from pathlib import Path
 from urllib.request import pathname2url
-import requests
+
 import pandas as pd
+import requests
 
 
 def execute_threat_intel_tbl_count():
-    db_connection, conn = get_db_conn()[0], get_db_conn()[1]
+    db_connection = get_db_conn()[0]
     data = db_connection.execute(
         "SELECT COUNT(1) FROM threatIntel")
     data = data.fetchall()
@@ -97,7 +98,7 @@ def initialize():
 
 
 def execute_db(query_data):
-    db_connection, conn = get_db_conn()[0], get_db_conn()[1]
+    db_connection = get_db_conn()[0]
     data = db_connection.execute(
         "SELECT * FROM threatIntel WHERE id=?", [query_data]
     )

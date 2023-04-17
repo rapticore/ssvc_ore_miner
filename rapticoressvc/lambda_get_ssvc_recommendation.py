@@ -1,5 +1,6 @@
-from typing import Any, Dict
 import logging
+from typing import Any, Dict
+
 from aws_lambda_powertools.event_handler import api_gateway
 
 from . import ssvc_recommendations

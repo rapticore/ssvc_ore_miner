@@ -1,5 +1,8 @@
-from .helpers import execute_db, process_cvss_score, nvd_parser
-from .svcc_helper import calculate_impact, calculate_utility
+from .helpers import execute_db
+from .helpers import nvd_parser
+from .helpers import process_cvss_score
+from .svcc_helper import calculate_impact
+from .svcc_helper import calculate_utility
 
 
 def vector_calculate_exploitability(cve_number, cvss_vector):
@@ -59,7 +62,7 @@ def vector_calculate_exposure(score):
     CVSS Score 9 --> 10/critical == unavoidable exposure
     """
     severity_list = ["critical", "high", "medium", "low"]
-    severity_priority = ["critical", "high"]
+
     severity_defer = ["medium", "low"]
     if score in severity_list:
         if score == "critical":
@@ -128,8 +131,6 @@ def vector_calculate_utility(exploit, cvss_vector, public_status, score):
 
 
     """
-    severity_list = ["critical", "high", "medium", "low"]
-    severity_priority = ["critical", "high"]
     attack_vector, user_interaction = None, None
     if cvss_vector:
         vector_dict = process_cvss_score(cvss_vector)

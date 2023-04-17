@@ -5,12 +5,16 @@ import logging
 import os
 import sys
 
-from . import svcc_helper
 from . import helpers
-from .nvd_data_helper import get_nvd_data, update_nvd_data
-from .svcc_constants import STORAGE_LOCAL, BUCKET_NAME
-from .vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
-    vector_calculate_exploitability, vector_calculate_impact
+from . import svcc_helper
+from .nvd_data_helper import get_nvd_data
+from .nvd_data_helper import update_nvd_data
+from .svcc_constants import BUCKET_NAME
+from .svcc_constants import STORAGE_LOCAL
+from .vector_calculator_helpers import vector_calculate_exploitability
+from .vector_calculator_helpers import vector_calculate_exposure
+from .vector_calculator_helpers import vector_calculate_impact
+from .vector_calculator_helpers import vector_calculate_utility
 
 combined_results = []
 

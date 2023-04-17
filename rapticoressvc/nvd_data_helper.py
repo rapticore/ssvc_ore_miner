@@ -9,10 +9,13 @@ import requests
 from nested_lookup import nested_lookup
 
 from .multi_threading_helper import run_parallel
-from .storage_helpers.files_helper import read_from_json_file, save_to_json_file
-from .storage_helpers.s3_helper import get_s3_client, upload_data_to_s3, download_data_from_s3
-from .svcc_constants import STORAGE_S3, STORAGE_LOCAL
-
+from .storage_helpers.files_helper import read_from_json_file
+from .storage_helpers.files_helper import save_to_json_file
+from .storage_helpers.s3_helper import download_data_from_s3
+from .storage_helpers.s3_helper import get_s3_client
+from .storage_helpers.s3_helper import upload_data_to_s3
+from .svcc_constants import STORAGE_LOCAL
+from .svcc_constants import STORAGE_S3
 
 CVE_NVD_DATA_DIRECTORY = "cve_nvd_data"
 
@@ -141,7 +144,7 @@ def update_nvd_data():
     if not bucket_name or not storage_type:
         logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return
-    timestamps_file_name = f"modification_timestamps"
+    timestamps_file_name = "modification_timestamps"
     nvd_data_years = ["2023", "2022", "2021", "2020", "2019", "2018"]
 
     modification_timestamps = get_modification_timestamps(bucket_name, timestamps_file_name, storage_type)
