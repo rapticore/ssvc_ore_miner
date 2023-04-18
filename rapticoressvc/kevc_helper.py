@@ -3,10 +3,13 @@ import logging
 import os
 
 import requests
-
-from rapticoressvc.storage_helpers.files_helper import read_from_json_file, save_to_json_file
-from rapticoressvc.storage_helpers.s3_helper import get_s3_client, upload_data_to_s3, download_data_from_s3
-from rapticoressvc.svcc_constants import STORAGE_S3, STORAGE_LOCAL
+from rapticoressvc.storage_helpers.files_helper import read_from_json_file
+from rapticoressvc.storage_helpers.files_helper import save_to_json_file
+from rapticoressvc.storage_helpers.s3_helper import download_data_from_s3
+from rapticoressvc.storage_helpers.s3_helper import get_s3_client
+from rapticoressvc.storage_helpers.s3_helper import upload_data_to_s3
+from rapticoressvc.svcc_constants import STORAGE_LOCAL
+from rapticoressvc.svcc_constants import STORAGE_S3
 
 KEVC_DATA_DIRECTORY = "kevc_data"
 
@@ -68,7 +71,7 @@ def update_kevc_data():
     if not bucket_name or not storage_type:
         logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return
-    file_name = f"kevc_cves_data"
+    file_name = "kevc_cves_data"
     kevc_url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 
     stored_data = get_kevc_local_data(bucket_name, file_name, storage_type) or {}
@@ -77,7 +80,7 @@ def update_kevc_data():
 
     fresh_data, last_modified = get_kevc_cisa_data(kevc_url, last_modified)
     if not fresh_data and not last_modified:
-        logging.debug(f'No KEVC data to update, exiting.')
+        logging.debug('No KEVC data to update, exiting.')
         return
 
     new_cves_count = 0
@@ -106,7 +109,7 @@ def check_cve_kevc_status(cve):
         logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return
     try:
-        file_name = f"kevc_cves_data"
+        file_name = "kevc_cves_data"
         stored_data = get_kevc_local_data(bucket_name, file_name, storage_type) or {}
         active_exploit_cves = stored_data.get("active_exploit_cves", [])
         has_active_exploit = cve in active_exploit_cves

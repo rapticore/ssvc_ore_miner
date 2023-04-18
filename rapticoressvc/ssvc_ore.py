@@ -5,13 +5,17 @@ import logging
 import os
 import sys
 
-from rapticoressvc import svcc_helper
 from rapticoressvc import helpers
+from rapticoressvc import svcc_helper
 from rapticoressvc.kevc_helper import update_kevc_data
-from rapticoressvc.nvd_data_helper import get_nvd_data, update_nvd_data
-from rapticoressvc.svcc_constants import STORAGE_LOCAL, BUCKET_NAME
-from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
-    vector_calculate_exploitability, vector_calculate_impact
+from rapticoressvc.nvd_data_helper import get_nvd_data
+from rapticoressvc.nvd_data_helper import update_nvd_data
+from rapticoressvc.svcc_constants import BUCKET_NAME
+from rapticoressvc.svcc_constants import STORAGE_LOCAL
+from rapticoressvc.vector_calculator_helpers import vector_calculate_exploitability
+from rapticoressvc.vector_calculator_helpers import vector_calculate_exposure
+from rapticoressvc.vector_calculator_helpers import vector_calculate_impact
+from rapticoressvc.vector_calculator_helpers import vector_calculate_utility
 
 combined_results = []
 

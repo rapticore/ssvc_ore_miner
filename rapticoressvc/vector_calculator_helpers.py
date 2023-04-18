@@ -1,6 +1,8 @@
-from rapticoressvc.helpers import process_cvss_score, nvd_parser
+from rapticoressvc.helpers import nvd_parser
+from rapticoressvc.helpers import process_cvss_score
 from rapticoressvc.kevc_helper import check_cve_kevc_status
-from rapticoressvc.svcc_helper import calculate_impact, calculate_utility
+from rapticoressvc.svcc_helper import calculate_impact
+from rapticoressvc.svcc_helper import calculate_utility
 
 
 def vector_calculate_exploitability(cve_number, cvss_vector):
