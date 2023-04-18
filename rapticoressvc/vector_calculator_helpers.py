@@ -1,8 +1,6 @@
-from .helpers import execute_db
-from .helpers import nvd_parser
-from .helpers import process_cvss_score
-from .svcc_helper import calculate_impact
-from .svcc_helper import calculate_utility
+from rapticoressvc.helpers import process_cvss_score, nvd_parser
+from rapticoressvc.kevc_helper import check_cve_kevc_status
+from rapticoressvc.svcc_helper import calculate_impact, calculate_utility
 
 
 def vector_calculate_exploitability(cve_number, cvss_vector):
@@ -23,7 +21,7 @@ def vector_calculate_exploitability(cve_number, cvss_vector):
     Active:Shared, observable, and reliable evidence that cyber threat actors
 
     1 - Check CISA KEVC - check whether a CVE has an active exploit
-        if yes =>> Exploitcation = active
+        if yes =>> Exploitation = active
     2 - Check NVBlib - Check whether schema has addition information
         if not CISA KEVC ==>
         Check CVSS for Exploit Code Maturity(E)
@@ -34,8 +32,8 @@ def vector_calculate_exploitability(cve_number, cvss_vector):
             Functional: E:F -- Explication = active
             High: E:H -- Explication = active
     """
-    check = execute_db(cve_number)
-    if check:
+    cve_kevc_status = check_cve_kevc_status(cve_number)
+    if cve_kevc_status:
         exploit_status = "active"
         return exploit_status
     else:

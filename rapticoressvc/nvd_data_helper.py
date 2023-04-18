@@ -8,14 +8,11 @@ from datetime import datetime
 import requests
 from nested_lookup import nested_lookup
 
-from .multi_threading_helper import run_parallel
-from .storage_helpers.files_helper import read_from_json_file
-from .storage_helpers.files_helper import save_to_json_file
-from .storage_helpers.s3_helper import download_data_from_s3
-from .storage_helpers.s3_helper import get_s3_client
-from .storage_helpers.s3_helper import upload_data_to_s3
-from .svcc_constants import STORAGE_LOCAL
-from .svcc_constants import STORAGE_S3
+from rapticoressvc.multi_threading_helper import run_parallel
+from rapticoressvc.storage_helpers.files_helper import read_from_json_file, save_to_json_file
+from rapticoressvc.storage_helpers.s3_helper import get_s3_client, upload_data_to_s3, download_data_from_s3
+from rapticoressvc.svcc_constants import STORAGE_S3, STORAGE_LOCAL
+
 
 CVE_NVD_DATA_DIRECTORY = "cve_nvd_data"
 
@@ -130,9 +127,9 @@ def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, s
 
     s3_client = storage_type == STORAGE_S3 and get_s3_client()
     args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
-    progress_description = 'NVD data upload progress'
     if modified_cve_list:
-        upload_statuses = run_parallel(update_nvd_record, modified_cve_list, args, max_workers, progress_description)
+        logging.info(f'Uploading {len(modified_cve_list)} new NVD data records...')
+        upload_statuses = run_parallel(update_nvd_record, modified_cve_list, args, max_workers)
 
     return upload_statuses
 
@@ -203,8 +200,7 @@ def get_nvd_data(cves, max_workers=10):
         cves = cves if type(cves) is list else [cves]
         s3_client = storage_type == STORAGE_S3 and get_s3_client()
         args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
-        progress_description = 'NVD data download progress'
-        cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers, progress_description)
+        cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers)
         cve_nvd_map = dict((key, cve_nvd_dict[key]) for cve_nvd_dict in cve_nvd_list for key in cve_nvd_dict)
     except Exception as e:
         logging.exception(e)

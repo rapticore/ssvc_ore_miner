@@ -5,16 +5,13 @@ import logging
 import os
 import sys
 
-from . import helpers
-from . import svcc_helper
-from .nvd_data_helper import get_nvd_data
-from .nvd_data_helper import update_nvd_data
-from .svcc_constants import BUCKET_NAME
-from .svcc_constants import STORAGE_LOCAL
-from .vector_calculator_helpers import vector_calculate_exploitability
-from .vector_calculator_helpers import vector_calculate_exposure
-from .vector_calculator_helpers import vector_calculate_impact
-from .vector_calculator_helpers import vector_calculate_utility
+from rapticoressvc import svcc_helper
+from rapticoressvc import helpers
+from rapticoressvc.kevc_helper import update_kevc_data
+from rapticoressvc.nvd_data_helper import get_nvd_data, update_nvd_data
+from rapticoressvc.svcc_constants import STORAGE_LOCAL, BUCKET_NAME
+from rapticoressvc.vector_calculator_helpers import vector_calculate_utility, vector_calculate_exposure, \
+    vector_calculate_exploitability, vector_calculate_impact
 
 combined_results = []
 
@@ -41,12 +38,7 @@ def xstr_asset_criticality(s):
 
 
 def ssvc_recommendations(asset, vul_details, public_status, environment, asset_type, asset_criticality):
-    logging.debug('Initializing......')
-    engine_check = helpers.initialize()
-    if not engine_check:
-        logging.error('DB engine could not be Initialized')
-        sys.exit(1)
-    logging.debug('DB engine Initialized')
+    logging.debug('Generating SSVC recommendation...')
     query = {}
     description = None
     severity_list = ["critical", "high", "medium", "low"]
@@ -250,6 +242,7 @@ def main():
     logging.basicConfig(level=log_level, stream=sys.stderr, format=log_format)
 
     update_nvd_data()
+    update_kevc_data()
 
     if args.datafile:
         logging.debug('Processing datafile')
