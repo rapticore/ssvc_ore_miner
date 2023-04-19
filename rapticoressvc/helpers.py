@@ -29,7 +29,8 @@ def nvd_parser(cvss_vector):
 def excel_writer(data):
     try:
         # Create a Pandas Excel writer using XlsxWriter as the engine.
-        writer = pd.ExcelWriter('ssvc_recommendations.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter('ssvc_recommendations.xlsx', engine='xlsxwriter')  \
+            # pylint: disable=abstract-class-instantiated
         df1 = pd.DataFrame(data)
         # Write each dataframe to a different worksheet.
         df1.to_excel(writer, sheet_name='ec2')

@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict
 
 from aws_lambda_powertools.event_handler import api_gateway
+
 from rapticoressvc import ssvc_recommendations
 
 logger = logging.getLogger()
