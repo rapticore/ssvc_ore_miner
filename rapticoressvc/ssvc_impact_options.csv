@@ -39,23 +39,25 @@ row,Environment,AssetType,AssetCriticality,Impact
 38,production,storage,high,very high
 39,production,storage,medium,high
 40,production,storage,low,medium
-41,non_production,storage,critical,high
-42,non_production,storage,high,high
-43,non_production,storage,medium,medium
-44,non_production,storage,low,low
-45,None,storage,critical,very high
-46,None,storage,high,very high
-47,None,storage,medium,high
-48,None,storage,low,medium
-49,production,network,critical,very high
-50,production,network,high,very high
-51,production,network,medium,high
-52,production,network,low,medium
-53,non_production,network,critical,high
-54,non_production,network,high,high
-55,non_production,network,medium,medium
-56,non_production,network,low,low
-57,None,network,critical,very high
-58,None,network,high,very high
-59,None,network,medium,high
-60,None,network,low,medium
+41,production,storage,None,very high
+42,non_production,storage,critical,high
+43,non_production,storage,high,high
+44,non_production,storage,medium,medium
+45,non_production,storage,low,low
+46,production,storage,None,high
+47,None,storage,critical,very high
+48,None,storage,high,very high
+49,None,storage,medium,high
+50,None,storage,low,medium
+51,production,network,critical,very high
+52,production,network,high,very high
+53,production,network,medium,high
+54,production,network,low,medium
+55,non_production,network,critical,high
+56,non_production,network,high,high
+57,non_production,network,medium,medium
+58,non_production,network,low,low
+59,None,network,critical,very high
+60,None,network,high,very high
+61,None,network,medium,high
+62,None,network,low,medium
