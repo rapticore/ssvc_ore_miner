@@ -94,7 +94,7 @@ python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r requirements.txt --upgrade
 export PYTHONPATH=.
-python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/data_vulnerability.csv -v 
+python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/test/sample_vulnerabilities_data.csv -v 
 ```
 
 ***Publish the package***

@@ -1,6 +1,5 @@
 import os
 
-import numpy
 import pandas
 from moto import mock_s3
 from rapticoressvc import kevc_helper
@@ -353,29 +352,10 @@ def test_sample_vulnerabilities(mocker):
             "environment": row_data.get("environment").strip(),
             "asset_type": row_data.get("assetType").strip(),
             "asset_criticality": row_data.get("assetCriticality").strip(),
-        })
-
-    sample_vulnerabilities_ssvc_recommendations = []
-    excel_data_df = pandas.read_excel(
-        "rapticoressvc/test/sample_vulnerabilities_ssvc_recommendations.xlsx", sheet_name='ec2')
-    excel_data_df = excel_data_df.replace({numpy.nan: None})
-    data_rows = list(excel_data_df.iterrows())
-    for row in data_rows:
-        row_data = row[1]
-        sample_vulnerabilities_ssvc_recommendations.append({
-            "asset": row_data.get("asset"),
-            "description": row_data.get("description"),
-            # "cve": row_data.get("cve", ""),
-            "vulnerability_score": row_data.get("vulnerability_score"),
-            "cvss_vector": row_data.get("cvss_vector"),
-            "asset_type": row_data.get("asset_type"),
-            "environment": row_data.get("environment"),
-            "public_status": row_data.get("public_status"),
-            "asset_criticality": row_data.get("asset_criticality"),
-            "ssvc_rec": row_data.get("ssvc_rec")
+            "ssvc_recommendation": row_data.get("ssvc_recommendation").strip(),
         })
 
     for data in sample_vulnerabilities_data:
+        expected = data.pop("ssvc_recommendation", None)
         actual = ssvc_recommendations(**data)
-        actual.pop("cve", None)
-        assert actual in sample_vulnerabilities_ssvc_recommendations
+        assert actual.get("ssvc_rec") == expected
