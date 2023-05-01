@@ -10,20 +10,18 @@ from rapticoressvc.nvd_data_helper import update_nvd_data
 from rapticoressvc.storage_helpers.s3_helper import get_s3_client
 from rapticoressvc.test.testing_helper import mock_data
 
-BUCKET_NAME = os.environ.get("BUCKET_NAME")
-STORAGE_TYPE = os.environ.get("STORAGE_TYPE")
-REGION = os.environ.get("REGION")
-
 
 @mock_s3
 def test_sample_vulnerabilities(mocker):
-    if STORAGE_TYPE == "s3":
-        get_s3_client().create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
+    bucket_name, storage_type, region = os.environ.get("BUCKET_NAME"), os.environ.get("STORAGE_TYPE"), \
+                                        os.environ.get("REGION")
+    if storage_type == "s3":
+        get_s3_client().create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
     mocker.patch.object(nvd_data_helper, 'download_extract_zip',
                         side_effect=lambda _url, last_modified_old: mock_data(_url, "ssvc_ore"))
     mocker.patch.object(kevc_helper, 'get_kevc_local_data',
-                        side_effect=lambda bucket_name, file_name, storage_type: mock_data(
-                            "get_kevc_local_data", bucket_name, file_name, storage_type))
+                        side_effect=lambda _bucket_name, file_name, _storage_type: mock_data(
+                            "get_kevc_local_data", _bucket_name, file_name, _storage_type))
 
     update_nvd_data()
     update_kevc_data()
