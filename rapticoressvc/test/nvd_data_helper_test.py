@@ -12,9 +12,6 @@ from rapticoressvc.storage_helpers.s3_helper import get_s3_client
 from rapticoressvc.svcc_constants import STORAGE_S3
 from rapticoressvc.test.testing_helper import mock_data
 
-BUCKET_NAME = os.environ.get("BUCKET_NAME")
-STORAGE_TYPE = os.environ.get("STORAGE_TYPE")
-REGION = os.environ.get("REGION")
 TIMESTAMPS_FILE_NAME = "modification_timestamps"
 MODIFICATION_TIMESTAMPS = {'a': 1, 'b': 2}
 CVE = "CVE-999-123"
@@ -23,21 +20,25 @@ CVE_DATA = "some cve data"
 
 @mock_s3
 def test_modification_timestamps_s3():
-    if STORAGE_TYPE == "s3":
-        get_s3_client().create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
-    update_modification_timestamps(BUCKET_NAME, TIMESTAMPS_FILE_NAME, MODIFICATION_TIMESTAMPS, STORAGE_TYPE)
-    actual = get_modification_timestamps(BUCKET_NAME, TIMESTAMPS_FILE_NAME, STORAGE_TYPE)
+    bucket_name, storage_type, region = os.environ.get("BUCKET_NAME"), os.environ.get("STORAGE_TYPE"), \
+                                        os.environ.get("REGION")
+    if storage_type == "s3":
+        get_s3_client().create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+    update_modification_timestamps(bucket_name, TIMESTAMPS_FILE_NAME, MODIFICATION_TIMESTAMPS, storage_type)
+    actual = get_modification_timestamps(bucket_name, TIMESTAMPS_FILE_NAME, storage_type)
     expected = MODIFICATION_TIMESTAMPS
     assert actual == expected
 
 
 @mock_s3
 def test_cve_nvd_record_s3():
-    if STORAGE_TYPE == "s3":
-        get_s3_client().create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
+    bucket_name, storage_type, region = os.environ.get("BUCKET_NAME"), os.environ.get("STORAGE_TYPE"), \
+                                        os.environ.get("REGION")
+    if storage_type == "s3":
+        get_s3_client().create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
     cve_nvd_data = {CVE: CVE_DATA}
-    s3_client = STORAGE_TYPE == STORAGE_S3 and get_s3_client()
-    args = dict(bucket_name=BUCKET_NAME, s3_client=s3_client, storage_type=STORAGE_TYPE)
+    s3_client = storage_type == STORAGE_S3 and get_s3_client()
+    args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
     update_nvd_record(cve_nvd_data, args)
     actual = download_nvd_record(CVE, args)
     expected = {CVE: CVE_DATA}
@@ -46,8 +47,10 @@ def test_cve_nvd_record_s3():
 
 @mock_s3
 def test_update_nvd_data_s3(mocker):
-    if STORAGE_TYPE == "s3":
-        get_s3_client().create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
+    bucket_name, storage_type, region = os.environ.get("BUCKET_NAME"), os.environ.get("STORAGE_TYPE"), \
+                                        os.environ.get("REGION")
+    if storage_type == "s3":
+        get_s3_client().create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
     mocker.patch.object(nvd_data_helper, 'download_extract_zip',
                         side_effect=lambda _url, last_modified_old: mock_data(_url, "nvd_data"))
     cve_list = ["CVE-2023-0001", "CVE-2023-0002", "CVE-2023-0003", "CVE-2023-0012", "CVE-2023-0013", "CVE-2023-0014"]
@@ -58,7 +61,7 @@ def test_update_nvd_data_s3(mocker):
         'CVE-2023-0013': '2023-01-13T18:00Z', 'CVE-2023-0014': '2023-02-09T15:15Z'}
 
     update_nvd_data()
-    actual_timestamps = get_modification_timestamps(BUCKET_NAME, TIMESTAMPS_FILE_NAME, STORAGE_TYPE)
+    actual_timestamps = get_modification_timestamps(bucket_name, TIMESTAMPS_FILE_NAME, storage_type)
     cve_list_nvd_data = get_nvd_data(cve_list)
     assert actual_timestamps == expected_timestamps
     assert all(cve_list_nvd_data.get(cve) for cve in cve_list)
