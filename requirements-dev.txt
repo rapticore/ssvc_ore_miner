@@ -8,6 +8,7 @@ pathspec==0.10.1
 platformdirs==2.5.2
 pylint==2.15.3
 pytest==7.3.1
+pytest-dotenv==0.5.2
 pytest-mock==3.10.0
 tomli==2.0.1
 typed-ast==1.5.4

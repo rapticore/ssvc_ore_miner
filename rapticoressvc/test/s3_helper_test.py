@@ -1,4 +1,5 @@
 import json
+import os
 
 import pytest
 from botocore.client import ClientError
@@ -7,10 +8,10 @@ from rapticoressvc.storage_helpers.s3_helper import download_data_from_s3
 from rapticoressvc.storage_helpers.s3_helper import get_s3_client
 from rapticoressvc.storage_helpers.s3_helper import upload_data_to_s3
 
-REGION = "us-west-2"
-BUCKET_NAME = "test_bucket_name"
-OBJECT_KEY = "test_object_key"
-OBJECT_DATA = "test_object_data"
+BUCKET_NAME = os.environ.get("BUCKET_NAME")
+REGION = os.environ.get("REGION")
+OBJECT_KEY = os.environ.get("OBJECT_KEY")
+OBJECT_DATA = os.environ.get("OBJECT_DATA")
 
 
 @mock_s3

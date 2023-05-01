@@ -61,8 +61,6 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     else:
         if type(vul_details) is not list:
             vul_details = [vul_details]
-        if vul_details:
-            vul_details = [cve.strip() for cve_numbers in vul_details for cve in cve_numbers.split('|')]
         exploit_data = []
         cve_nvd_map = get_nvd_data(vul_details)
         for vul_detail in vul_details:
