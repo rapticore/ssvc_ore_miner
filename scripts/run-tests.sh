@@ -52,7 +52,6 @@ pylint "${targets[@]}"
 
 # Run tests and measure code coverage (https://coverage.readthedocs.io)
 pytest rapticoressvc/test/kevc_helper_test.py rapticoressvc/test/nvd_data_helper_test.py \
- rapticoressvc/test/s3_helper_test.py rapticoressvc/test/ssvc_ore_test.py \
- --envfile rapticoressvc/.env.test
+ rapticoressvc/test/s3_helper_test.py rapticoressvc/test/ssvc_ore_test.py
 #PYTHONPATH="${PWD}/backend/api/ssvc_ore_miner" \
 #  coverage run --source "${PWD}" --omit ".venv/*,tests/*" -m unittest discover -v -s tests
