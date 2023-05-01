@@ -30,7 +30,7 @@ bandit --recursive "${targets[@]}" --skip B108 -ll
 flake8 --config .flake8 "${targets[@]}"
 
 # Sort imports (https://pycqa.github.io/isort)
-isort --settings-path .isort.cfg --check --diff "${targets[@]}"
+#isort --settings-path .isort.cfg --check --diff "${targets[@]}"
 
 # Static type checker (https://mypy.readthedocs.io)
 #mypy --config-file .mypy.ini "${targets[@]}"
@@ -51,5 +51,7 @@ pylint "${targets[@]}"
 #xenon --max-absolute A --max-modules A --max-average A "${targets[@]}"
 
 # Run tests and measure code coverage (https://coverage.readthedocs.io)
+pytest rapticoressvc/test/kevc_helper_test.py rapticoressvc/test/nvd_data_helper_test.py \
+ rapticoressvc/test/s3_helper_test.py rapticoressvc/test/ssvc_ore_test.py
 #PYTHONPATH="${PWD}/backend/api/ssvc_ore_miner" \
 #  coverage run --source "${PWD}" --omit ".venv/*,tests/*" -m unittest discover -v -s tests

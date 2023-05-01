@@ -38,6 +38,6 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
     package_data={
-            "rapticoressvc": ["ssvc_impact_options.csv", "priority-options_v2.csv", "ssvc_utility_options.csv", "data_vulnerability.csv"],
+            "rapticoressvc": ["ssvc_impact_options.csv", "priority-options_v2.csv", "ssvc_utility_options.csv"],
         },
 )
