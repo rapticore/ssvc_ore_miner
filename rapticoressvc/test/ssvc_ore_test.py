@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pandas
 from moto import mock_s3
@@ -28,7 +29,8 @@ def test_sample_vulnerabilities(mocker):
 
     # sample file
     sample_vulnerabilities_data = []
-    excel_data_df = pandas.read_csv("rapticoressvc/test/sample_vulnerabilities_data.csv")
+    sample_vulnerabilities_file_path = (Path(__file__).parent / "sample_vulnerabilities_data.csv").resolve()
+    excel_data_df = pandas.read_csv(sample_vulnerabilities_file_path)
     data_rows = list(excel_data_df.iterrows())
     for row in data_rows:
         row_data = row[1]
@@ -43,7 +45,12 @@ def test_sample_vulnerabilities(mocker):
             "ssvc_recommendation": row_data.get("ssvc_recommendation").strip(),
         })
 
+    results = {}
+    record_number = 1
     for data in sample_vulnerabilities_data:
         expected = data.pop("ssvc_recommendation", None)
         actual = ssvc_recommendations(**data)
-        assert actual.get("ssvc_rec") == expected
+        results[record_number] = actual.get("ssvc_rec") == expected
+        record_number += 1
+    failed_records = [record for record, result in results.items() if not result]
+    assert not failed_records
