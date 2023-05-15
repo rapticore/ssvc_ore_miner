@@ -9,10 +9,10 @@ from rapticoressvc.svcc_constants import BUCKET_NAME
 from rapticoressvc.svcc_constants import STORAGE_S3
 
 # Uncomment before using this file
-# os.environ["BUCKET_NAME"] = BUCKET_NAME
-# os.environ["STORAGE_TYPE"] = STORAGE_S3
+os.environ["BUCKET_NAME"] = BUCKET_NAME
+os.environ["STORAGE_TYPE"] = STORAGE_S3
 # os.environ["AWS_PROFILE"] = "dev1"  # be logged in to aws profile through sso
-# os.environ["AWS_REGION"] = "us-west-2"
+os.environ["AWS_REGION"] = "us-west-2"
 
 """
 Generate NVD data for CVEs mentioned in sample_vulnerabilities_data.csv
