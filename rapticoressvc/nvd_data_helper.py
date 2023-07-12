@@ -17,6 +17,7 @@ from rapticoressvc.svcc_constants import STORAGE_LOCAL
 from rapticoressvc.svcc_constants import STORAGE_S3
 
 CVE_NVD_DATA_DIRECTORY = "cve_nvd_data"
+MAX_WORKERS_INITIAL = min(32, os.cpu_count() + 4)
 
 
 def update_modification_timestamps(bucket_name, timestamps_file_name, modification_timestamps, storage_type):
@@ -110,7 +111,7 @@ def update_nvd_record(cve_nvd_data, args):
     return upload_status
 
 
-def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=32):
+def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=MAX_WORKERS_INITIAL):
     modified_cve_list = []
     upload_statuses = []
     modified_time_format = '%Y-%m-%dT%H:%MZ'
@@ -190,7 +191,7 @@ def download_nvd_record(cve, args):
     return nvd_data
 
 
-def get_nvd_data(cves, max_workers=10):
+def get_nvd_data(cves, max_workers=MAX_WORKERS_INITIAL):
     cve_nvd_map = {}
     bucket_name = os.environ.get("BUCKET_NAME")
     storage_type = os.environ.get("STORAGE_TYPE", "")
