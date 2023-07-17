@@ -111,7 +111,8 @@ def update_nvd_record(cve_nvd_data, args):
     return upload_status
 
 
-def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type, max_workers=MAX_WORKERS_INITIAL):
+def update_nvd_records(bucket_name, cve_nvd_data_map, modification_timestamps, storage_type,
+                       max_workers=MAX_WORKERS_INITIAL):
     modified_cve_list = []
     upload_statuses = []
     modified_time_format = '%Y-%m-%dT%H:%MZ'
@@ -171,10 +172,35 @@ def update_nvd_data():
         update_modification_timestamps(bucket_name, timestamps_file_name, modification_timestamps, storage_type)
 
 
+def get_referenced_cves_from_nvd_record(rejected_nvd_record):
+    referenced_cves = []
+    try:
+        nvd_record_json = json.loads(rejected_nvd_record.get("nvd_data") or "") or {}
+        descriptions = nvd_record_json.get("cve", {}).get('description', {}).get('description_data') or []
+        for description in descriptions:
+            _description = str(description.get("value", ""))
+            cves = None
+            if "All CVE users should reference" in _description:
+                cves = _description.split("All CVE users should reference")[1].split(".")[0]
+            elif "All CVE users should consult" in _description:
+                cves = _description.split("All CVE users should consult")[1].split(".")[0]
+            elif "use CVE-" in _description:
+                cves = "CVE-" + _description.split("use CVE-")[1].split(".")[0]
+            if cves is not None:
+                cves = [segment.strip(",[]") for segment in cves.split(" ")
+                        if segment.startswith("CVE-") or segment.startswith("[CVE-")]
+                [referenced_cves.append(cve) for cve in cves if cve not in referenced_cves]
+    except Exception as e:
+        logging.exception(e)
+    return referenced_cves
+
+
 def download_nvd_record(cve, args):
     logging.debug(f'Getting NVD data for CVE: {cve}')
     bucket_name = args.get("bucket_name")
     storage_type = args.get("storage_type", "")
+    recursion_level = args.get("recursion_level", 1)
+    MAX_REFERENCE_LOOKUPS = 3
     nvd_data = {cve: None}
     try:
         nvd_record = None
@@ -185,13 +211,19 @@ def download_nvd_record(cve, args):
         elif storage_type == STORAGE_LOCAL:
             file_destination = [bucket_name, CVE_NVD_DATA_DIRECTORY, f'{cve}.json']
             nvd_record = read_from_json_file(file_destination)
-        nvd_data = {cve: nvd_record}
+
+        if "** REJECT **" in str(nvd_record):
+            if recursion_level <= MAX_REFERENCE_LOOKUPS:
+                referenced_cves = get_referenced_cves_from_nvd_record(nvd_record)
+                nvd_data = get_nvd_data(referenced_cves, recursion_level=recursion_level+1)
+        else:
+            nvd_data = {cve: nvd_record}
     except Exception as e:
         logging.exception(e)
     return nvd_data
 
 
-def get_nvd_data(cves, max_workers=MAX_WORKERS_INITIAL):
+def get_nvd_data(cves, max_workers=MAX_WORKERS_INITIAL, recursion_level=1):
     cve_nvd_map = {}
     bucket_name = os.environ.get("BUCKET_NAME")
     storage_type = os.environ.get("STORAGE_TYPE", "")
@@ -202,7 +234,8 @@ def get_nvd_data(cves, max_workers=MAX_WORKERS_INITIAL):
     try:
         cves = cves if type(cves) is list else [cves]
         s3_client = storage_type == STORAGE_S3 and get_s3_client()
-        args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type)
+        args = dict(bucket_name=bucket_name, s3_client=s3_client, storage_type=storage_type,
+                    recursion_level=recursion_level)
         cve_nvd_list = run_parallel(download_nvd_record, cves, args, max_workers)
         cve_nvd_map = dict((key, cve_nvd_dict[key]) for cve_nvd_dict in cve_nvd_list for key in cve_nvd_dict)
     except Exception as e:

@@ -48,10 +48,8 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     severity_list = ["critical", "high", "medium", "low"]
     severity_priority = ["critical", "high"]
     cvss_vector = None
-    nvd_data_local = None
     score = None
     exploit_status = None
-    recommendation = None
     if vul_details in severity_list:
         score = vul_details
         if vul_details in severity_priority:
@@ -63,6 +61,7 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
             vul_details = [vul_details]
         exploit_data = []
         cve_nvd_map = get_nvd_data(vul_details)
+        [vul_details.append(cve) for cve in cve_nvd_map.keys() if cve not in vul_details]
         for vul_detail in vul_details:
             try:
                 nvd_data = cve_nvd_map.get(vul_detail)
@@ -79,7 +78,7 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
                 logging.exception(e)
                 # todo handle this
         if len(exploit_data) > 0:
-            max_exploit = max(exploit_data, key=lambda x: x['score'])
+            max_exploit = max(exploit_data, key=lambda x: x['score'] or 0)
 
             exploit_status = max_exploit.get('exploit_status')
             score = max_exploit.get('score')
