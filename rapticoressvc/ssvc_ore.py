@@ -73,8 +73,9 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
                 if cvss_vector:
                     exploit_status = vector_calculate_exploitability(vul_detail, cvss_vector)
                 description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
-                exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
-                                         description=description))
+                if cvss_vector and score:
+                    exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
+                                        description=description))
             except Exception as e:
                 logging.exception(e)
                 # todo handle this
