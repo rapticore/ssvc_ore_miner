@@ -50,14 +50,14 @@ def get_system_path_to_file_destination(file_destination, start_location=None):
     return file_destination_path
 
 
-def save_to_file(data, file_destination, file_format, mode=None, create_path_to_file=True):
+def save_to_file(data, file_destination, file_format, mode=None, create_path_to_file=True, start_location=None):
     success_flag = False
     try:
         if create_path_to_file and type(file_destination) is list and len(file_destination) > 1:
             directory_destination = file_destination[:-1]
             not check_directory(directory_destination) and set_directory(directory_destination)
 
-        file_destination_path = get_system_path_to_file_destination(file_destination)
+        file_destination_path = get_system_path_to_file_destination(file_destination, start_location=start_location)
         if data and file_destination_path:
             os.path.isfile(file_destination_path) and logging.warning(f'Replacing file: {file_destination_path}')
             module = None
@@ -73,8 +73,8 @@ def save_to_file(data, file_destination, file_format, mode=None, create_path_to_
     return success_flag
 
 
-def save_to_json_file(data, file_destination, mode=None):
-    return save_to_file(data, file_destination, FileFormat.JSON.value, mode)
+def save_to_json_file(data, file_destination, mode=None, start_location=None):
+    return save_to_file(data, file_destination, FileFormat.JSON.value, mode=mode, start_location=start_location)
 
 
 def read_from_file(file_destination, file_format: FileFormat, mode=None, start_location=None):
