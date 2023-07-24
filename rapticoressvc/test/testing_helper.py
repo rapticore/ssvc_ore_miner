@@ -11,6 +11,8 @@ def mock_environment_variables(**envvars):
 
 def mock_data(keyword, second_keyword, *args, **kargs):
     mocked_data = None
+    if second_keyword == "ssvc_ore":
+        mocked_data = None, None
     if keyword == "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json":
         _data = read_from_json_file(["kevc_cisa_data.json"], start_location=Path(__file__).parent)
         mocked_data = _data.get("data", {}), _data.get("last_modified", "")

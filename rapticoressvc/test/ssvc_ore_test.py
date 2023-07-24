@@ -9,6 +9,9 @@ from rapticoressvc import ssvc_recommendations
 from rapticoressvc.kevc_helper import update_kevc_data
 from rapticoressvc.nvd_data_helper import update_nvd_data
 from rapticoressvc.storage_helpers.s3_helper import get_s3_client
+from rapticoressvc.test.test_data_helper import (
+    generate_sample_vulnerabilities_cve_nvd_data,
+)
 from rapticoressvc.test.testing_helper import mock_data
 
 
@@ -18,6 +21,9 @@ def test_sample_vulnerabilities(mocker):
                                         os.environ.get("REGION")
     if storage_type == "s3":
         get_s3_client().create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
+
+    generate_sample_vulnerabilities_cve_nvd_data()
+
     mocker.patch.object(nvd_data_helper, 'download_extract_zip',
                         side_effect=lambda _url, last_modified_old: mock_data(_url, "ssvc_ore"))
     mocker.patch.object(kevc_helper, 'get_kevc_local_data',
