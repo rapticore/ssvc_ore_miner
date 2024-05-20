@@ -1,11 +1,23 @@
 import logging
+import os
 from typing import Any, Dict
 
+import urllib3
 from aws_lambda_powertools.event_handler import api_gateway
+from urllib3.exceptions import InsecureRequestWarning
+
 from rapticoressvc import ssvc_recommendations
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+
+[logging.getLogger(p).setLevel(logging.ERROR) for p in ["boto3", "botocore"]]
+urllib3.disable_warnings(InsecureRequestWarning)
+disable_loggers = ["urllib3", "requests"]
+for dl in disable_loggers:
+    logging.getLogger(dl).setLevel("CRITICAL")
+
+LOG_LEVEL = os.environ['LOG_LEVEL']
+logger.setLevel(LOG_LEVEL)
 
 app = api_gateway.ApiGatewayResolver(
     proxy_type=api_gateway.ProxyEventType.APIGatewayProxyEventV2
