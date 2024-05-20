@@ -4,9 +4,8 @@ from typing import Any, Dict
 
 import urllib3
 from aws_lambda_powertools.event_handler import api_gateway
-from urllib3.exceptions import InsecureRequestWarning
-
 from rapticoressvc import ssvc_recommendations
+from urllib3.exceptions import InsecureRequestWarning
 
 logger = logging.getLogger()
 
