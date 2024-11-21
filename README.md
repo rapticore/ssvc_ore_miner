@@ -1,125 +1,147 @@
-SSVC Ore Miner
-========================
+# SSVC Ore Miner
 
-**Stakeholder-specific Vulnerability Categorization(SSVC) Ore Miner**
+## **Overview**
+The **Stakeholder-Specific Vulnerability Categorization (SSVC) Ore Miner** is a tool designed to enhance vulnerability management by automating the process of calculating patch priority. It addresses the shortcomings of traditional methods like the Common Vulnerability Scoring System (CVSS) by incorporating asset context and vulnerability intelligence.
 
+### **Why SSVC Ore Miner?**
+While CVSS provides a generic risk score, it fails to consider the specific context of vulnerable assets. SSVC Ore Miner bridges this gap by:
+- Accounting for the real-life implications of vulnerabilities.
+- Using well-defined decision logic for prioritization.
+- Allowing inspection, modification, and extension of decision criteria to fit organizational needs.
 
-The Stakeholder-specific Vulnerability Categorization (SSVC) is a system for prioritizing actions during vulnerability management. SSVC aims to avoid one-size-fits-all solutions in favor of a modular decision-making system with clearly defined and tested parts that vulnerability managers can select and use as appropriate to their context.
+By leveraging asset context and vulnerability intelligence, the SSVC Ore Miner helps security teams focus on vulnerabilities that pose the highest risk of compromise.
 
-SSVC Ore Miner extends and simplifies that work by automating the process of calculating patch priority. A known shortcoming of the Common Vulnerability Scoring System(CVSS) is that it lacks the context of the vulnerable asset. Risk-based prioritization does not take into account real-life consequences. Deferring low-priority systems with critically actively exploited vulnerabilities with the rapidly changing state of the asset. SSVC aims to improve on those methods by using asset context and vulnerability intelligence to make informed decisions that can be backed up by well-understood logic. 
+---
 
-The decision criteria are included for inspection, modification, and updates and can be extended to meet specific use cases. 
+## **Prioritization Criteria**
 
+SSVC Ore Miner evaluates vulnerabilities using the following vectors:
 
-By contextualizing the vulnerability in the asset, we can improve prioritization and security outcomes which can help security teams focus on the vulnerabilities that can lead to a compromise. The context for the vulnerability and asset is created through the following matrix: 
+1. **Exploitation:**  
+   Determines the exploit's availability and status using open-source threat intelligence feeds.  
+   - Possible values: `active`, `PoC`, `none`.
 
-**1 - Exploitation:** 
-Checks for the availability of the exploit and its status using Open Source threat intelligence feeds. An exploit can be "active", "PoC" or "None"
+2. **Exposure:**  
+   Assesses the likelihood of exposure if an exploit is used against a vulnerable asset.  
+   - Possible values: `unavoidable`, `probable`, `unlikely`.
 
-**2 - Exposure:** 
-Checks the likelihood of exposure if the exploit is used against a vulnerable asset. Exposure can be "unavoidable", " probable" or "unlikely"
+3. **Utility:**  
+   Evaluates the ease of exploitation based on factors like network access, user interaction, and asset discoverability.  
+   - Possible values: `effortless`, `complex`, `laborious`.
 
-**3 - Utility:** Checks for utility/ease-of-use of vulnerability against the vulnerability asset. The utility considers whether the exploit is active, whether it is network-based or local and requires user interaction and discoverability of the vulnerable asset(public, private, etc). Utility can be "effortless", "complex", or "laborious"
+4. **Impact:**  
+   Considers the environment (e.g., production or staging), asset type, and criticality to the business.  
+   - Possible values: `very high`, `high`, `medium`, `low`.
 
-**4 - Impact:** Impact takes into account environment(production, non-production), asset type(compute, storage, etc) and asset criticality(critical to business, storage of sensitive data). Based on these values Impact can be "very high", "high", "medium" or "low"
+---
 
+## **Patch Priority Levels**
+Based on the evaluation, SSVC Ore Miner assigns one of the following patch priorities:
 
-The prioritization matrix uses the above vector to produce a patch priority. The patch priority can be:
+| Patch Priority  | Description                                                                                                                                 |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| **act_now**      | Critical risk of compromise. The vulnerability affects a public-facing or critical asset, and the exploit is highly effective.             |
+| **out-of-cycle** | Increased risk of compromise. Patching should occur ahead of the regular schedule.                                                          |
+| **schedule**     | Follow the regular patching schedule.                                                                                                      |
+| **defer**        | The risk is minimal; the patch can be delayed.                                                                                             |
+| **review**       | The vulnerability is new or undisclosed, and a CVSS vector has not been assigned yet. Requires further analysis.                           |
 
-https://github.com/CERTCC/SSVC
-| Patch Priority | Description                                                                                                                                                            |
-|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| act_now        | Critical risk of compromise, the production/critical asset is open to public, exploit is effective and can be used with minimum skills to create a significant impact. |
-| out-of-cycle   | Increased risk of compromise patch ahead of the regular patching schedule                                                                                              |
-| schedule       | Follow regular patching schedule for patch                                                                                                                             |
-| defer          | Can be deferred                                                                                                                                                        |
-| review          | New or yet undisclosed vulnerability - a CVSS vector has not been assigned for this vulnerability.                                                                    |
+---
 
----------------
+## **Internals**
 
-**SSVC Ore Miner Internals**
+### **Open-Source Threat Intelligence**
+- Pulls data from the Known Exploitable Vulnerability (KEV) catalog and NVD vulnerability data from CISA and NIST.
+- Analyzes CVE exploitability and CVSS scores to calculate the **Exploitation** and **Utility** vectors.
 
+### **Asset Context**
+- Uses asset context to refine prioritization.
+- Maps vulnerabilities to the first four stages of the MITRE ATT&CK® Matrix for Enterprise:  
+  - **Reconnaissance**, **Resource Development**, **Initial Access**, and **Execution**.  
+  - [MITRE ATT&CK Matrix](https://attack.mitre.org/matrices/enterprise/)
 
-***Opensource Threat Intelligence:***
-Ore Miner starts by pulling in Known Exploitable Vulnerability Catalog and NVD vulnerability Data from CISA and NIST. This data is used to check for exploitability status of the CVE and analysis of the CVSS score. The Ore Miner will still recommend Remediation Prirotization but it will not be Asset Context Aware - this takes into account whether the exploitate is an RCE or whether it requires User interaction. These factors are used to calculate the Exploitability and Utility of the vulnerability. 
+### **Decision Tree**
+- Independently calculates vectors for **Exposure**, **Utility**, and **Impact**.  
+- Uses these vectors to generate a query for the final decision tree, producing a prioritization result.
 
-***Asset Context***
-If available the Asset Context is then used to further Prioritize. A decision tree is used to calculated Exposure, Utility and Impact. Each Vector is independently calculated. MITRE ATT&CK(R) Matrix for cloud is used to to map first four stages of Attack - Reconnaniness, Resource Development, Initial Access and Execution - for each asset first 4 stages are calculated in the context of the vulnerability. 
-https://attack.mitre.org/matrices/enterprise/
+---
 
-***Decision Tree***
-Each vector is calculated independently to create a query for the final Decision tree. This returns the Vulnerability Prioritization for each vulnerability in the context of the asset. 
+## **Usage**
 
+### Command-Line Interface (CLI)
 
-***Usage***:
-```commandline
-ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] [-e {production,non_production,None}]
-[-a {db,compute,storage,None,network}] [-s {critical,high,medium,low}] [--file FILE] [-v]
+```bash
+ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_restricted,private,None}] 
+             [-e {production,non_production,None}] [-a {db,compute,storage,None,network}] 
+             [-s {critical,high,medium,low}] [--file FILE] [-v]
 ```
 
+#### **Optional Arguments**:
+- `-h, --help`: Show help message.
+- `--single`: Parameter-based entry.
+- `--datafile`: Upload vulnerabilities via a CSV file using `--file`.
+- `-id, --asset_id`: Asset identifier (optional).
+- `-cn, --cve_number`: CVE numbers separated by `|`.
+- `-p, --public_status`: Public status of the asset (`public`, `public_restricted`, `private`, `none`).
+- `-vs, --vul_severity`: Vulnerability severity (`critical`, `high`, `medium`, `low`).
+- `-e, --environment`: Asset environment (`production`, `non_production`, `none`).
+- `-a, --assetType`: Asset type (`db`, `compute`, `storage`, `network`, `none`).
+- `-s, --criticality`: Business criticality of the asset (`critical`, `high`, `medium`, `low`).
+- `--file`: Provide a CSV file for batch vulnerability input.
+- `-v, --verbose`: Increase output verbosity.
 
-***Optional Arguments***:
+---
 
-`-h, --help show this help message` 
+### Example
 
-`--single Parameter based entry`
-
-`--datafile csv file upload - use --file option`
-
-`-id, --asset_id Asset Identifier(optional)`
-
-`-cn CVE_NUMBERs, --cve_number CVE_NUMBERs CVE numbers for the vulnerability separated by '|'`
-
-`-p {public,public_restricted,private,None} --public_status {public,public_restricted,private,None} Public Status, allowed values: public, public_restricted, private`
-
-`-vs, {critical,high,medium,low} --vul_severity Vulnerability Severity where CVE Number is not available. CVE takes precedence`
-
-`-e {production,non_production,None}, --environment {production,non_production,None} Environment for the asset. Choices: production, non_production, None -a {DB,Computer,Storage,None}`
-
-`--assetType {db,Computer,Storage,None, network} Asset Type allowed values. Choices: db, compute, storage, None, network`
-
-`-s {critical,high,medium,low}, --criticality {critical,high,medium,low} Criticality Business value of asset. Choices: critical, high, medium, low`
-
-`--file FILE Provide a vulnerability/host via stdin (e.g. through piping) or --file`
-
-`-v, --verbose Increase output verbosity`
-
-***Example***
-
-Example of using sample vulnerability data file in csv
-
-```shell
-cd path/to/ssvc_ore_minor
+Validate vulnerabilities using a sample CSV file:
+```bash
+cd path/to/ssvc_ore_miner
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r requirements.txt --upgrade
 export PYTHONPATH=.
-python3 rapticoressvc/ssvc_ore.py --datafile --file ./rapticoressvc/test/sample_vulnerabilities_data.csv -v 
+python3 ssvc_ore.py --datafile --file ./test/sample_vulnerabilities_data.csv -v
 ```
 
-***Publish the package***
-1. Update the version in pyproject.toml
-2. ```shell
-    python setup.py sdist bdist_wheel
-   // To upload to testpypi
-    python -m twine upload --repository testpypi dist/* 
-   // To upload to pypi
-    python -m twine upload dist/*
-    ```
-Further details about publishing can be found [here](https://towardsdatascience.com/how-to-publish-a-python-package-to-pypi-7be9dd5d6dcd)
+---
 
-***Use as a package***
-```shell
+### Publish the Package
+
+1. Update the version in `pyproject.toml`.
+2. Build and upload to PyPI:
+   ```bash
+   python setup.py sdist bdist_wheel
+   python -m twine upload dist/*
+   ```
+
+---
+
+### Use as a Python Package
+Install the package:
+```bash
 pip install rapticoressvc
 ```
-```shell
+
+Example:
+```python
 from rapticoressvc import ssvc_recommendations
 
-ssvc_recommendations(asset_id, cve_numbers_array_or_severity, public_status, environment, asset_type, asset_criticality)
+ssvc_recommendations(
+    asset_id="asset123",
+    cve_numbers_array_or_severity=["CVE-2023-1234", "CVE-2023-5678"],
+    public_status="public",
+    environment="production",
+    asset_type="compute",
+    asset_criticality="high"
+)
 ```
-Based on the initial work done at
 
-@inproceedings{spring2020ssvc, title={Prioritizing vulnerability response: {A} stakeholder-specific vulnerability
-categorization}, author={Jonathan M Spring and Eric Hatleback and Allen D. Householder and Art Manion and Deana Shick},
-address={Brussels, Belgium}, year={2020}, month = dec, booktitle = {Workshop on the Economics of Information Security} }
+---
 
+## **Credits**
+Based on the work from:
+
+Spring, J., Hatleback, E., Householder, A.D., Manion, A., & Shick, D. (2020).  
+*"Prioritizing vulnerability response: A stakeholder-specific vulnerability categorization"*  
+Presented at the Workshop on the Economics of Information Security, Brussels, Belgium.
