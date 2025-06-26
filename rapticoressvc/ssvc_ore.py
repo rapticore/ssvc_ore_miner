@@ -16,6 +16,8 @@ from rapticoressvc.vector_calculator_helpers import vector_calculate_exploitabil
 from rapticoressvc.vector_calculator_helpers import vector_calculate_exposure
 from rapticoressvc.vector_calculator_helpers import vector_calculate_impact
 from rapticoressvc.vector_calculator_helpers import vector_calculate_utility
+from rapticoressvc.epss_helper import get_epss_scores_batch, categorize_epss_score
+from rapticoressvc.risk_language_helper import generate_risk_language
 
 combined_results = []
 
@@ -50,6 +52,9 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     cvss_vector = None
     score = None
     exploit_status = None
+    epss_data = None
+    epss_score = None
+    epss_category = None
     if vul_details in severity_list:
         score = vul_details
         if vul_details in severity_priority:
@@ -96,10 +101,41 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
     else:
         recommendation = "review"
 
+    # EPSS integration
+    epss_scores = get_epss_scores_batch(vul_details)
+    # Use the highest EPSS score among the CVEs
+    epss_score = None
+    epss_percentile = None
+    epss_cve = None
+    if epss_scores:
+        for cve, epss in epss_scores.items():
+            if epss and (epss_score is None or epss['epss_score'] > epss_score):
+                epss_score = epss['epss_score']
+                epss_percentile = epss.get('percentile')
+                epss_cve = cve
+    epss_category = categorize_epss_score(epss_score) if epss_score is not None else "unknown"
+    epss_data = epss_scores.get(epss_cve) if epss_cve else None
+
+    # Generate risk language
+    risk_description = generate_risk_language({
+        'ssvc_rec': recommendation,
+        'Exploitation': query["Exploitation"],
+        'Exposure': query["Exposure"],
+        'Utility': query["Utility"],
+        'Impact': query["Impact"],
+        'vulnerability_score': score,
+        'asset_type': asset_type,
+        'environment': environment,
+        'public_status': public_status,
+        'asset_criticality': asset_criticality
+    }, epss_data)
+
     results = dict(asset=asset, description=description, cve=vul_details, vulnerability_score=score,
                    cvss_vector=cvss_vector,
                    asset_type=asset_type, environment=environment,
-                   public_status=public_status, asset_criticality=asset_criticality, ssvc_rec=recommendation)
+                   public_status=public_status, asset_criticality=asset_criticality, ssvc_rec=recommendation,
+                   epss_score=epss_score, epss_category=epss_category, epss_percentile=epss_percentile,
+                   risk_description=risk_description)
 
     logging.info(results)
     combined_results.append(results)
