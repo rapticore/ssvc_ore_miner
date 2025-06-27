@@ -8,6 +8,7 @@ While CVSS provides a generic risk score, it fails to consider the specific cont
 - Accounting for the real-life implications of vulnerabilities.
 - Using well-defined decision logic for prioritization.
 - Allowing inspection, modification, and extension of decision criteria to fit organizational needs.
+- **NEW**: Integrating EPSS (Exploit Prediction Scoring System) scores for enhanced risk assessment.
 
 By leveraging asset context and vulnerability intelligence, the SSVC Ore Miner helps security teams focus on vulnerabilities that pose the highest risk of compromise.
 
@@ -33,6 +34,10 @@ SSVC Ore Miner evaluates vulnerabilities using the following vectors:
    Considers the environment (e.g., production or staging), asset type, and criticality to the business.  
    - Possible values: `very high`, `high`, `medium`, `low`.
 
+5. **EPSS Score:**  
+   **NEW**: Exploit Prediction Scoring System score indicating the probability of exploitation within 30 days.
+   - Provides percentile ranking and risk categorization.
+
 ---
 
 ## **Patch Priority Levels**
@@ -53,6 +58,7 @@ Based on the evaluation, SSVC Ore Miner assigns one of the following patch prior
 ### **Open-Source Threat Intelligence**
 - Pulls data from the Known Exploitable Vulnerability (KEV) catalog and NVD vulnerability data from CISA and NIST.
 - Analyzes CVE exploitability and CVSS scores to calculate the **Exploitation** and **Utility** vectors.
+- **NEW**: Fetches EPSS scores from FIRST.org API for enhanced exploit prediction.
 
 ### **Asset Context**
 - Uses asset context to refine prioritization.
@@ -63,6 +69,7 @@ Based on the evaluation, SSVC Ore Miner assigns one of the following patch prior
 ### **Decision Tree**
 - Independently calculates vectors for **Exposure**, **Utility**, and **Impact**.  
 - Uses these vectors to generate a query for the final decision tree, producing a prioritization result.
+- **NEW**: Incorporates EPSS scores to enhance decision-making with exploit probability data.
 
 ---
 
@@ -90,30 +97,30 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 - `--file`: Provide a CSV file for batch vulnerability input.
 - `-v, --verbose`: Increase output verbosity.
 
----
+### **Example Usage**
 
-### Example
-
-Validate vulnerabilities using a sample CSV file:
+#### **Single Vulnerability Analysis**
 ```bash
-cd path/to/ssvc_ore_miner
-python3 -m venv venv
-source venv/bin/activate
-python3 -m pip install -r requirements.txt --upgrade
-export PYTHONPATH=.
-python3 ssvc_ore.py --datafile --file ./test/sample_vulnerabilities_data.csv -v
+ssvc_ore.py --single -id "web-server-01" -cn "CVE-2023-1234" -p "public" -e "production" -a "compute" -s "high" -v
 ```
 
----
+#### **Batch Processing with CSV File**
+```bash
+ssvc_ore.py --datafile --file vulnerabilities.csv -v
+```
 
-### Publish the Package
+#### **Using Severity Instead of CVE**
+```bash
+ssvc_ore.py --single -id "database-01" -vs "critical" -p "private" -e "production" -a "db" -s "critical" -v
+```
 
-1. Update the version in `pyproject.toml`.
-2. Build and upload to PyPI:
-   ```bash
-   python setup.py sdist bdist_wheel
-   python -m twine upload dist/*
-   ```
+### **CSV File Format**
+Your CSV file should have the following columns:
+```csv
+asset_id,cve_number,vul_severity,public_status,environment,assetType,assetCriticality
+web-server-01,CVE-2023-1234|CVE-2023-5678,None,public,production,compute,high
+database-01,None,critical,private,production,db,critical
+```
 
 ---
 
@@ -125,17 +132,30 @@ pip install rapticoressvc
 
 Example:
 ```python
-from rapticoressvc import ssvc_recommendations
+from rapticoressvc.ssvc_ore import ssvc_recommendations
 
-ssvc_recommendations(
-    asset_id="asset123",
-    cve_numbers_array_or_severity=["CVE-2023-1234", "CVE-2023-5678"],
+# Analyze a single vulnerability
+result = ssvc_recommendations(
+    asset="web-server-01",
+    vul_details=["CVE-2023-1234"],
     public_status="public",
     environment="production",
     asset_type="compute",
     asset_criticality="high"
 )
+
+print(f"SSVC Recommendation: {result['ssvc_rec']}")
+print(f"EPSS Score: {result['epss_score']}")
+print(f"EPSS Category: {result['epss_category']}")
 ```
+
+---
+
+## **Requirements**
+
+- Python 3.9+
+- Internet connection for fetching vulnerability data
+- Optional: AWS credentials for S3 storage (if using S3 storage type)
 
 ---
 
