@@ -99,6 +99,14 @@ ssvc_ore.py [-h] [--single | --datafile] [-cn CVE_NUMBER] [-p {public,public_res
 
 ### **Example Usage**
 
+cd path/to/ssvc_ore_miner
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install -r requirements.txt --upgrade
+export PYTHONPATH=.
+python3 ssvc_ore.py --datafile --file ./test/sample_vulnerabilities_data.csv -v
+
+
 #### **Single Vulnerability Analysis**
 ```bash
 ssvc_ore.py --single -id "web-server-01" -cn "CVE-2023-1234" -p "public" -e "production" -a "compute" -s "high" -v
