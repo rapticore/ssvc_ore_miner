@@ -5,6 +5,25 @@ from unittest import mock
 from rapticoressvc.storage_helpers.files_helper import read_from_json_file
 
 
+def make_nvd_2_cve(cve_id, vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+                   score=10.0, description="sample description", vuln_status="Analyzed",
+                   metric_key="cvssMetricV31", last_modified="2024-01-01T00:00:00.000"):
+    """Build a minimal NVD 2.0 `cve` object for tests (the shape the API returns)."""
+    metrics = {}
+    if vector is not None:
+        metrics[metric_key] = [{
+            "type": "Primary",
+            "cvssData": {"vectorString": vector, "baseScore": score},
+        }]
+    return {
+        "id": cve_id,
+        "vulnStatus": vuln_status,
+        "lastModified": last_modified,
+        "descriptions": [{"lang": "en", "value": description}],
+        "metrics": metrics,
+    }
+
+
 def mock_environment_variables(**envvars):
     return mock.patch.dict(os.environ, envvars)
 

@@ -133,3 +133,4 @@ ssvc-ore-miner
 .ropeproject
 *.db
 /ssvc_recommendations.xlsx
+.venv-phase0/*
