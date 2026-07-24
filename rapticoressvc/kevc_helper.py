@@ -1,14 +1,17 @@
 import json
 import logging
-import os
 
 import requests
+from rapticoressvc.config import get_config
 from rapticoressvc.storage_helpers.files_helper import read_from_json_file
 from rapticoressvc.storage_helpers.files_helper import save_to_json_file
+from rapticoressvc.storage_helpers.redis_helper import redis_read_json
+from rapticoressvc.storage_helpers.redis_helper import redis_write_json
 from rapticoressvc.storage_helpers.s3_helper import download_data_from_s3
 from rapticoressvc.storage_helpers.s3_helper import get_s3_client
 from rapticoressvc.storage_helpers.s3_helper import upload_data_to_s3
 from rapticoressvc.svcc_constants import STORAGE_LOCAL
+from rapticoressvc.svcc_constants import STORAGE_REDIS
 from rapticoressvc.svcc_constants import STORAGE_S3
 
 KEVC_DATA_DIRECTORY = "kevc_data"
@@ -24,6 +27,8 @@ def update_kevc_local_data(bucket_name, kevc_file_name, data, storage_type):
         elif storage_type == STORAGE_LOCAL:
             file_destination = [bucket_name, KEVC_DATA_DIRECTORY, f'{kevc_file_name}.json']
             upload_status = save_to_json_file(data, file_destination)
+        elif storage_type == STORAGE_REDIS:
+            upload_status = redis_write_json(data, [bucket_name, KEVC_DATA_DIRECTORY, kevc_file_name])
         logging.debug(f"KEVC data upload status: {upload_status}")
     except Exception as e:
         logging.exception(e)
@@ -39,6 +44,8 @@ def get_kevc_local_data(bucket_name, kevc_file_name, storage_type):
         elif storage_type == STORAGE_LOCAL:
             file_destination = [bucket_name, KEVC_DATA_DIRECTORY, f'{kevc_file_name}.json']
             data = read_from_json_file(file_destination)
+        elif storage_type == STORAGE_REDIS:
+            data = redis_read_json([bucket_name, KEVC_DATA_DIRECTORY, kevc_file_name])
         data = data or {}
     except Exception as e:
         logging.exception(e)
@@ -66,8 +73,9 @@ def get_kevc_cisa_data(url, last_modified_old=None):
 
 def update_kevc_data():
     logging.info('Updating KEVC data...')
-    bucket_name = os.environ.get("BUCKET_NAME")
-    storage_type = os.environ.get("STORAGE_TYPE", "")
+    config = get_config()
+    bucket_name = config.bucket_name
+    storage_type = config.storage_type
     if not bucket_name or not storage_type:
         logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return
@@ -102,9 +110,10 @@ def update_kevc_data():
 
 def check_cve_kevc_status(cve):
     has_active_exploit = False
-    bucket_name = os.environ.get("BUCKET_NAME")
-    storage_type = os.environ.get("STORAGE_TYPE", "")
-    allowed_storage_medium = [STORAGE_S3, STORAGE_LOCAL]
+    config = get_config()
+    bucket_name = config.bucket_name
+    storage_type = config.storage_type
+    allowed_storage_medium = [STORAGE_S3, STORAGE_LOCAL, STORAGE_REDIS]
     if not bucket_name or not storage_type or storage_type not in allowed_storage_medium:
         logging.error(f'Missing or incorrect configuration, bucket_name: {bucket_name}, storage_type: {storage_type}')
         return

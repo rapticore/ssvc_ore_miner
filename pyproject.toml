@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rapticoressvc"
-version = "0.0.17"
+version = "0.0.18"
 authors = [
   { name="Rapticore", email="ahsan.mir@rapticore.com" },
 ]
@@ -17,10 +17,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "cvss",
     "aws-lambda-powertools>=2.12.0",
     "boto3>=1.26.110",
-    "nested_lookup",
     "numpy>=1.24.0,<1.25.0",
     "pandas>=1.5.0,<2.0.0",
     "requests>=2.31.0",
@@ -29,6 +27,10 @@ dependencies = [
     "xlsxwriter>=3.0.8",
 ]
 
+[project.optional-dependencies]
+# Redis cache backend (STORAGE_TYPE=redis). Optional: local/s3 users don't need it.
+redis = ["redis>=4.2.0"]
+
 [project.urls]
 "Homepage" = "https://github.com/rapticore/ssvc_ore_miner"
 "Bug Tracker" = "https://github.com/rapticore/ssvc_ore_miner/issues"
@@ -36,3 +38,11 @@ dependencies = [
 
 [project.scripts]
 ssvc-ore = "rapticoressvc.ssvc_ore:main"
+
+[tool.setuptools]
+# Explicit package list: ship only runtime packages (no test/ or docs/).
+packages = ["rapticoressvc", "rapticoressvc.storage_helpers"]
+
+[tool.setuptools.package-data]
+# The decision tables are loaded at runtime and MUST ship in the wheel.
+"rapticoressvc" = ["*.csv"]

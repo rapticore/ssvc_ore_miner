@@ -3,6 +3,8 @@ import os
 
 import pandas as pd
 
+from rapticoressvc.svcc_constants import HIGH
+
 absolute_path = os.path.dirname(__file__)
 
 full_path = absolute_path
@@ -87,11 +89,15 @@ def outcome_utility_dist(df, normalize=True):
 
 
 def calculate_impact(query):
-    for key, df in DATA.items():
-        df = lookup('impact', query)
-        recommendations = outcome_impact_dist(df).round(decimals=3).to_dict()
-        recommendations = list(recommendations.keys())[0]
-        return recommendations
+    df = lookup('impact', query)
+    recommendations = outcome_impact_dist(df).round(decimals=3).to_dict()
+    if recommendations:
+        return list(recommendations.keys())[0]
+    # No matching row for this Environment/AssetType/AssetCriticality combination.
+    # Degrade to a conservative default instead of crashing (mirrors the "high"
+    # default used for asset criticality elsewhere).
+    logging.warning(f"No impact table match for query: {query}, defaulting to 'high'")
+    return HIGH
 
 
 def calculate_utility(query):

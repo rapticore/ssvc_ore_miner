@@ -73,10 +73,9 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
                 if not nvd_data:
                     continue
                 cvss_vector, score = nvd_data.get("cve_vector"), nvd_data.get("cve_score")
-                nvd_data_local = json.loads(nvd_data.get("nvd_data"))
                 if cvss_vector:
                     exploit_status = vector_calculate_exploitability(vul_detail, cvss_vector)
-                description = nvd_data_local["cve"]["description"]["description_data"][0]["value"]
+                description = nvd_data.get("description")
                 if cvss_vector and score:
                     exploit_data.append(dict(cvss_vector=cvss_vector, score=score, exploit_status=exploit_status,
                                         description=description))
@@ -102,7 +101,13 @@ def ssvc_recommendations(asset, vul_details, public_status, environment, asset_t
         recommendation = "review"
 
     # EPSS integration
-    epss_scores = get_epss_scores_batch(vul_details)
+    # Only query EPSS with real CVE identifiers. In the severity-only path
+    # (vul_details is a bare string like "medium"), passing it straight to the
+    # batch call would iterate the string into fake per-character "CVEs".
+    cve_candidates = vul_details if isinstance(vul_details, list) else [vul_details]
+    cve_candidates = [c for c in cve_candidates
+                      if isinstance(c, str) and c.upper().startswith("CVE-")]
+    epss_scores = get_epss_scores_batch(cve_candidates) if cve_candidates else {}
     # Use the highest EPSS score among the CVEs
     epss_score = None
     epss_percentile = None
@@ -154,6 +159,9 @@ def set_environment_variables(args):
             os.environ['AWS_REGION'] = args.aws_region
     except Exception as e:
         logging.exception(e)
+    # Reload the centralized config so it reflects the env just set from CLI args.
+    from rapticoressvc.config import reset_config
+    reset_config()
 
 
 def main():
